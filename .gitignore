@@ -1,0 +1,8 @@
+# General
+.DS_Store
+.idea
+
+MachineLearningPlatforms/Kubeflow/HelloKubeflow/venv
+MachineLearningPlatforms/Kubeflow/HelloKubeflow/src/HelloKubeflow.egg-info
+MachineLearningPlatforms/Kubeflow/HelloKubeflow/tests
+MachineLearningPlatforms/Kubeflow/HelloKubeflow/.pytest_cache

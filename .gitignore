@@ -2,7 +2,7 @@
 .DS_Store
 .idea
 
-MachineLearningPlatforms/Kubeflow/HelloKubeflow/venv
-MachineLearningPlatforms/Kubeflow/HelloKubeflow/src/HelloKubeflow.egg-info
-MachineLearningPlatforms/Kubeflow/HelloKubeflow/tests
-MachineLearningPlatforms/Kubeflow/HelloKubeflow/.pytest_cache
+MachineLearningPlatforms/Kubeflow/HelloKubeflow_light/venv
+MachineLearningPlatforms/Kubeflow/HelloKubeflow_light/src/HelloKubeflow.egg-info
+MachineLearningPlatforms/Kubeflow/HelloKubeflow_light/tests
+MachineLearningPlatforms/Kubeflow/HelloKubeflow_light/.pytest_cache

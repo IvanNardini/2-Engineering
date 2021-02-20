@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-# HelloKubeflow.py
-# HelloKubeflow is a hello world python module for testing Kubeflow
+# hellokubeflow_light.py
+# hellokubeflow_light is a hello world python module for testing Kubeflow
 # Python lightweight components (https://www.kubeflow.org/docs/pipelines/sdk/sdk-overview/#creating-lightweight-components)
 # Note: Python lightweight does not require container image
 #
@@ -12,10 +12,7 @@
 # 4 - Define the pipeline using the Kubeflow Pipelines DSL
 # 5 - Compile the pipeline to generate a compressed YAML definition of the pipeline
 
-import os
 import argparse
-
-import kfp
 import kfp.components as cpt
 import kfp.compiler as cmp
 import kfp.dsl as dsl
@@ -57,6 +54,6 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run pipeline builder")
     parser.add_argument('--output-component-dir', default='../out/components')
-    parser.add_argument('--output-pipeline-dir', default='../out/pipeline')
+    parser.add_argument('--output-pipeline-dir', default='../out/pipelines')
     args = parser.parse_args()
     main(args=args)

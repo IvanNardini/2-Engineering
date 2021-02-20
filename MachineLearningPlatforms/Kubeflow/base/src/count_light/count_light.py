@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-# countkubeflow_light.py
-# countkubeflow is an example a slight bit complex python lightweight component example
+# count_light.py
+# count_light is an example a slight bit complex python lightweight component example
 #
 # Steps:
 # 1 - Create python functions
@@ -48,7 +48,7 @@ def main(args):
 
     @dsl.pipeline(name='Count Kubeflow Pipeline',
                   description='Count Number of tokens in a sentence')
-    def count_kubeflow_pipeline(sentence: str):
+    def count_kubeflow_pipeline(sentence='Ciao Kubeflow, come stai oggi?'):
         tokenizer_task = tokenizer_component(sentence=sentence)
         count_tokens_task = count_tokens_component(tokens=tokenizer_task.output)
 

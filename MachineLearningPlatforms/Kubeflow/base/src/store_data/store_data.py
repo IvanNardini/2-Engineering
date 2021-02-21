@@ -9,8 +9,6 @@ import kfp.components as cpt
 import kfp.compiler as cmp
 import kfp.dsl as dsl
 
-from kubernetes import client as k8s_client
-
 
 # Functions ------------------------------------------------------------------------------------------------------------
 def prepare_data(text: str) -> list:
@@ -87,9 +85,9 @@ def main(args):
                                                word=word)
         count_word_task.after(load_data_task)
 
-    pipe_complier = cmp.Compiler()
-    pipe_complier.compile(pipeline_func=build_store_data_pipeline,
-                          package_path=f'{OUT_PIPELINE_DIR}/count_kubeflow_pipeline.zip')
+    pipe_compiler = cmp.Compiler()
+    pipe_compiler.compile(pipeline_func=build_store_data_pipeline,
+                          package_path=f'{OUT_PIPELINE_DIR}/store_data_pipeline.zip')
 
 
 if __name__ == "__main__":

@@ -9,8 +9,10 @@
 import os
 import pickle
 import nltk
-
 import argparse
+
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/secret/gcp-credentials/user-gcp-sa.json'
+
 
 # Helpers --------------------------------------------------------------------------------------------------------------
 def load_text(file_path: str) -> str:
@@ -19,15 +21,18 @@ def load_text(file_path: str) -> str:
     file.close()
     return text
 
+
 def store_data(word_list: list, out_path_pkl: str):
     with open(out_path_pkl, 'wb') as file:
         pickle.dump(word_list, file)
+
 
 # Functions ------------------------------------------------------------------------------------------------------------
 def prepare_data(text: str) -> list:
     tokenizer = nltk.RegexpTokenizer(r"\w+")
     plain_text = tokenizer.tokenize(text=text)
     return plain_text
+
 
 # Main -------------------------------------------------------------------------------------------------------------
 def main(args):

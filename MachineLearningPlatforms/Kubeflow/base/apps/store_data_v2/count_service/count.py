@@ -8,6 +8,9 @@
 
 import pickle
 import argparse
+import os
+
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/secret/gcp-credentials/user-gcp-sa.json'
 
 # Helpers --------------------------------------------------------------------------------------------------------------
 

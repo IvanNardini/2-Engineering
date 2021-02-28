@@ -37,6 +37,6 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run pipeline builder")
     parser.add_argument('--path-pkl', help='The path to load pkl file with processed data')
-    parser.add_argument('--word', help='The word to count occurences')
+    parser.add_argument('--word', help='The word to count occurrences')
     args = parser.parse_args()
     main(args=args)

@@ -20,8 +20,9 @@ import argparse
 # Variables ------------------------------------------------------------------------------------------------------------
 REGISTRY = "docker.io/in92"
 
-
 # Components -----------------------------------------------------------------------------------------------------------
+
+
 
 @kfp.dsl.component
 def prepare_component(text_path: dsl.PipelineParam, out_path_pkl: dsl.PipelineParam):
@@ -29,9 +30,7 @@ def prepare_component(text_path: dsl.PipelineParam, out_path_pkl: dsl.PipelinePa
         name='Prepare data component',
         image=f'{REGISTRY}/kf_prepare:1.0.0',
         arguments=['--text-path', text_path,
-                   '--path-pkl', out_path_pkl],
-        file_outputs={
-            'output': '/data-processed'}
+                   '--path-pkl', out_path_pkl]
     )
 
 
@@ -51,9 +50,15 @@ def main(args):
 
     @dsl.pipeline(name="Store data pipeline",
                   description="A pipeline to test volume mounting")
-    def build_pipeline(text_bucket_path: dsl.PipelineParam, pkl_bucket_path: dsl.PipelineParam, word="Kubeflow"):
-        step_1 = prepare_component(text_path=text_bucket_path, out_path_pkl=pkl_bucket_path)
-        step_2 = count_component(input_path_pkl=step_1.output, word=word)
+    def build_pipeline(text_bucket_path: dsl.PipelineParam, pkl_volume_path: dsl.PipelineParam, word="Kubeflow"):
+        vol = dsl.VolumeOp(name='create volume',
+                           resource_name='data-pipeline',
+                           size="5Gi",
+                           modes=dsl.VOLUME_MODE_RWO)
+        step_1 = prepare_component(text_path=text_bucket_path, out_path_pkl=pkl_volume_path)
+        step_1.add_pvolumes({"/data-pipeline": vol.volume})
+        step_2 = count_component(input_path_pkl=pkl_volume_path, word=word)
+        step_2.add_pvolumes({"/data-pipeline": vol.volume})
         step_2.after(step_1)
 
     pipeline_compiler = cmp.Compiler()

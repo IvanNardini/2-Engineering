@@ -15,6 +15,7 @@ import kfp
 import kfp.components as cpt
 import kfp.compiler as cmp
 import kfp.dsl as dsl
+from kfp.gcp import use_gcp_secret
 import argparse
 
 # Variables ------------------------------------------------------------------------------------------------------------
@@ -31,7 +32,7 @@ def prepare_component(text_path: dsl.PipelineParam, out_path_pkl: dsl.PipelinePa
         image=f'{REGISTRY}/kf_prepare:1.0.0',
         arguments=['--text-path', text_path,
                    '--path-pkl', out_path_pkl]
-    )
+    ).apply(use_gcp_secret('user-gcp-sa'))
 
 
 @kfp.dsl.component
@@ -41,7 +42,7 @@ def count_component(input_path_pkl: dsl.PipelineParam, word: str):
         image=f'{REGISTRY}/kf_count_word:1.0.0',
         arguments=['--path-pkl', input_path_pkl,
                    '--word', word]
-    )
+    ).apply(use_gcp_secret('user-gcp-sa'))
 
 
 # Main

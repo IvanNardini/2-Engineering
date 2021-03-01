@@ -42,7 +42,7 @@ def prepare_data(text: str) -> list:
 def main(args):
     text_path = args.text_path
     out_path_pkl = args.path_pkl
-    logging(f"Look for data in {os.getcwd()}")
+    logging.info(f"Look for data in {os.getcwd()}")
     text = load_text(file_path=text_path)
     token_text = prepare_data(text=text)
     store_data(word_list=token_text, out_path_pkl=out_path_pkl)

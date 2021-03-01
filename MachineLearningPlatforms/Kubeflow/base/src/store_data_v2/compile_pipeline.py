@@ -23,8 +23,6 @@ REGISTRY = "docker.io/in92"
 
 # Components -----------------------------------------------------------------------------------------------------------
 
-
-
 @kfp.dsl.component
 def prepare_component(text_path: dsl.PipelineParam, out_path_pkl: dsl.PipelineParam):
     return kfp.dsl.ContainerOp(
@@ -45,7 +43,7 @@ def count_component(input_path_pkl: dsl.PipelineParam, word: str):
     ).apply(use_gcp_secret('user-gcp-sa'))
 
 
-# Main
+# Main -------------------------------------------------------------------------------------------------------------
 def main(args):
     output_pipeline_dir = args.output_pipeline_dir
 

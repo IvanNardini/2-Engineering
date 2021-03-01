@@ -11,9 +11,6 @@ import pickle
 import nltk
 import argparse
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/secret/gcp-credentials/user-gcp-sa.json'
-
-
 # Helpers --------------------------------------------------------------------------------------------------------------
 def load_text(file_path: str) -> str:
     with open(file=file_path, mode='r') as file:

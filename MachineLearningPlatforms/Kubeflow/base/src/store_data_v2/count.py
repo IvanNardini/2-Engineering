@@ -8,7 +8,12 @@
 
 import pickle
 import argparse
+import logging
 
+# Settings
+logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
+                    datefmt='%m/%d/%Y %I:%M:%S %p',
+                    level=logging.DEBUG)
 
 # Helpers --------------------------------------------------------------------------------------------------------------
 
@@ -28,7 +33,6 @@ def count_word(word_list: list, word: str) -> int:
 def main(args):
     input_path_pkl = args.path_pkl
     word = args.word
-
     token_text = load_data(input_path_pkl=input_path_pkl)
     n_word = count_word(word_list=token_text, word=word)
     return n_word

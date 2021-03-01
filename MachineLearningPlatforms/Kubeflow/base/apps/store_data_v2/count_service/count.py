@@ -8,6 +8,12 @@
 
 import pickle
 import argparse
+import logging
+
+# Settings
+logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
+                    datefmt='%m/%d/%Y %I:%M:%S %p',
+                    level=logging.DEBUG)
 
 # Helpers --------------------------------------------------------------------------------------------------------------
 

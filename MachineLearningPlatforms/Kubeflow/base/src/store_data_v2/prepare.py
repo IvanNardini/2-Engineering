@@ -6,11 +6,16 @@
 # - Wrapper python and annotations to simplify the pipeline
 # - file_outputs option to avoid .add_pvolume repetitions
 
-import os
 import pickle
 import nltk
-
+import logging
+import os
 import argparse
+
+# Settings
+logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
+                    datefmt='%m/%d/%Y %I:%M:%S %p',
+                    level=logging.DEBUG)
 
 # Helpers --------------------------------------------------------------------------------------------------------------
 def load_text(file_path: str) -> str:
@@ -31,9 +36,9 @@ def prepare_data(text: str) -> list:
 
 # Main -------------------------------------------------------------------------------------------------------------
 def main(args):
+
     text_path = args.text_path
     out_path_pkl = args.path_pkl
-
     text = load_text(file_path=text_path)
     token_text = prepare_data(text=text)
     store_data(word_list=token_text, out_path_pkl=out_path_pkl)

@@ -3,5 +3,5 @@ from setuptools import setup, find_packages
 
 setup(name='hellokubeflow',
       extras_required=dict(tests=['pytest']),
-      packages=find_packages(where='src'),
-      package_dir={"": "src"})
+      packages=find_packages(where='pipelines'),
+      package_dir={"": "pipelines"})

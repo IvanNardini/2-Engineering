@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+IMAGE_NAME=${1:-kf_count}
+IMAGE_TAG=${2:-1.0.0}
+DOCKER_REGISTRY=${3:-in92}
+
+docker build -t "$IMAGE_NAME:$IMAGE_IMAGE_TAG"
+docker tag "$IMAGE_NAME:$IMAGE_IMAGE_TAG" "$DOCKER_REGISTRY/$IMAGE_NAME:$IMAGE_IMAGE_TAG"
+docker push "$DOCKER_REGISTRY/$IMAGE_NAME:$IMAGE_IMAGE_TAG"

@@ -33,14 +33,14 @@ def prepare_component(text_path: dsl.PipelineParam, out_path_pkl: dsl.PipelinePa
     ).apply(use_gcp_secret('user-gcp-sa'))
 
 
-@kfp.dsl.component
-def count_component(input_path_pkl: dsl.PipelineParam, word: str):
-    return kfp.dsl.ContainerOp(
-        name='Count word component',
-        image=f'{REGISTRY}/kf_count_word:1.0.0',
-        arguments=['--path-pkl', input_path_pkl,
-                   '--word', word]
-    ).apply(use_gcp_secret('user-gcp-sa'))
+# @kfp.dsl.component
+# def count_component(input_path_pkl: dsl.PipelineParam, word: str):
+#     return kfp.dsl.ContainerOp(
+#         name='Count word component',
+#         image=f'{REGISTRY}/kf_count_word:1.0.0',
+#         arguments=['--path-pkl', input_path_pkl,
+#                    '--word', word]
+#     ).apply(use_gcp_secret('user-gcp-sa'))
 
 
 # Main -------------------------------------------------------------------------------------------------------------
@@ -51,8 +51,8 @@ def main(args):
                   description="A pipeline to test volume mounting")
     def build_pipeline(text_bucket_path: dsl.PipelineParam, pkl_volume_path: dsl.PipelineParam, word="Kubeflow"):
         step_1 = prepare_component(text_path=text_bucket_path, out_path_pkl=pkl_volume_path)
-        step_2 = count_component(input_path_pkl=pkl_volume_path, word=word)
-        step_2.after(step_1)
+        # step_2 = count_component(input_path_pkl=pkl_volume_path, word=word)
+        # step_2.after(step_1)
 
     pipeline_compiler = cmp.Compiler()
     pipeline_compiler.compile(pipeline_func=build_pipeline,

@@ -29,7 +29,7 @@ def prepare_component(text_path: dsl.PipelineParam, out_path_pkl: dsl.PipelinePa
         name='Prepare data component',
         image=f'{REGISTRY}/kf_prepare:1.0.0',
         arguments=['--text-path', text_path,
-                   '--path-pkl', out_path_pkl]
+                   '--pkl-path', out_path_pkl]
     ).apply(use_gcp_secret('user-gcp-sa'))
 
 

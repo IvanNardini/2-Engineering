@@ -3,7 +3,7 @@
 .idea
 
 MachineLearningPlatforms/Kubeflow/base/env
-MachineLearningPlatforms/Kubeflow/base/src/hellokubeflow.egg-info
+MachineLearningPlatforms/Kubeflow/base/pipelines/hellokubeflow.egg-info
 MachineLearningPlatforms/Kubeflow/base/__init__.py
 MachineLearningPlatforms/Kubeflow/base/tests
 MachineLearningPlatforms/Kubeflow/base/.pytest_cache

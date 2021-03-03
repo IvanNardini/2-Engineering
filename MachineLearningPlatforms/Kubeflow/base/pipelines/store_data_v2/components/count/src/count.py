@@ -12,18 +12,19 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p',
                     level=logging.DEBUG)
 
+
 # Function -------------------------------------------------------------------------------------------------------------
 
-def count_word(word_list: list, word: str) -> int:
-    return word_list.count(word)
+def count_word(words_list: list, word: str) -> int:
+    return words_list.count(word)
 
 
 # Main -----------------------------------------------------------------------------------------------------------------
-def run_count_word(pkl_path:str, word:str):
+def run_count_word(words_list: list, word: str):
     logging.info("Count words processing starts...")
     try:
         logging.info("Counting...")
-        n_word = count_word(word_list=token_text, word=word)
+        n_word = count_word(words_list=words_list, word=word)
     except RuntimeError as error:
         logging.info(error)
     else:
@@ -34,15 +35,15 @@ def run_count_word(pkl_path:str, word:str):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Cound Words processing")
 
-    parser.add_argument('--pkl-path',
+    parser.add_argument('--word-list',
                         required=True,
-                        help='The path to load pkl file with processed data')
+                        help='A list of words')
 
     parser.add_argument('--word',
                         required=True,
                         help='The word to count occurrences')
 
     args = parser.parse_args()
-    input_pkl_path = args.pkl_path
+    input_word_list = args.word_list
     input_word = args.word
-    run_count_word(pkl_path=input_pkl_path, word=input_word)
+    run_count_word(words_list=input_word_list, word=input_word)

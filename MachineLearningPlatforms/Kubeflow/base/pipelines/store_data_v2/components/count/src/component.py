@@ -13,25 +13,33 @@ import pickle
 import logging
 import argparse
 
+
 # Helpers --------------------------------------------------------------------------------------------------------------
 def load_file(file_path: str) -> str:
     logging.info(f"Loading {file_path} file...")
-    with gfile.GFile(name=file_path, mode='r') as file:
-        text = file.read().replace("\n", " ")
+    with gfile.GFile(name=file_path, mode='rb') as file:
+        words_list = pickle.load(file=file)
     file.close()
-    return text
+    return words_list
+
+def store_data(word_count: int, output_file: str):
+    logging.info(f"Saving {output_file} file...")
+    with gfile.GFile(name=output_file, mode='w') as file:
+        file.write(word_count)
+    file.close()
 
 # Main -----------------------------------------------------------------------------------------------------------------
-def run_component(pkl_path:str, word:str):
+def run_component(pkl_path: str, word: str, output_file:str):
     logging.info('Initiating Count Words component...')
     try:
-        words_list = load_file(file_path=text_path)
-        word_count = run_count_words(pkl_path=pkl_path, word=word)
+        words_list = load_file(file_path=pkl_path)
+        word_count = str(run_count_word(words_list=words_list, word=word))
+        store_data(word_count=word_count, output_file=output_file)
     except RuntimeError as error:
         logging.info(error)
     else:
         logging.info('Count words component successfully completed!')
-    return out_path_pkl
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run Cound Words component")
@@ -46,7 +54,13 @@ if __name__ == '__main__':
                         required=True,
                         help='Word to count')
 
+    parser.add_argument('--count-path',
+                        type=str,
+                        required=True,
+                        help='Path to count file')
+
     args = parser.parse_args()
-    input_pkl_path=args.pkl_path
-    input_word=args.word
-    run_component(pkl_path=input_pkl_path, word=input_word)
+    input_pkl_path = args.pkl_path
+    input_word = args.word
+    out_count_path = args.count_path
+    run_component(pkl_path=input_pkl_path, word=input_word, output_file=out_count_path)

@@ -23,6 +23,7 @@ REGISTRY = "docker.io/in92"
 
 # Components -----------------------------------------------------------------------------------------------------------
 
+#TODO: file_output
 @kfp.dsl.component
 def prepare_component(text_path: dsl.PipelineParam, out_pkl_path: dsl.PipelineParam):
     return kfp.dsl.ContainerOp(
@@ -34,12 +35,13 @@ def prepare_component(text_path: dsl.PipelineParam, out_pkl_path: dsl.PipelinePa
 
 
 @kfp.dsl.component
-def count_component(input_pkl_path: dsl.PipelineParam, word: str):
+def count_component(input_pkl_path: dsl.PipelineParam, word: dsl.PipelineParam, count_path: dsl.PipelineParam):
     return kfp.dsl.ContainerOp(
         name='Count word component',
         image=f'{REGISTRY}/kf_count_word:1.0.0',
         arguments=['--pkl-path', input_pkl_path,
-                   '--word', word]
+                   '--word', word,
+                   '--count-path', count_path]
     ).apply(use_gcp_secret('user-gcp-sa'))
 
 

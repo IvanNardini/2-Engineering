@@ -1,0 +1,7 @@
+# Test component container locally command
+
+docker container run -it --rm \
+-v /Users/ivannardini/Playground/2-Engineering/MachineLearningPlatforms/Kubeflow/base/data:usr/local/pipeline/data \
+kf_prepare:1.0.0 \
+--text-path usr/local/pipeline/data/text.txt
+--pkl-path usr/local/pipeline/data/list.pkl

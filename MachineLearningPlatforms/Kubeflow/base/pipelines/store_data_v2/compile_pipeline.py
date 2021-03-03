@@ -24,35 +24,35 @@ REGISTRY = "docker.io/in92"
 # Components -----------------------------------------------------------------------------------------------------------
 
 @kfp.dsl.component
-def prepare_component(text_path: dsl.PipelineParam, out_path_pkl: dsl.PipelineParam):
+def prepare_component(text_path: dsl.PipelineParam, out_pkl_path: dsl.PipelineParam):
     return kfp.dsl.ContainerOp(
         name='Prepare data component',
         image=f'{REGISTRY}/kf_prepare:1.0.0',
         arguments=['--text-path', text_path,
-                   '--pkl-path', out_path_pkl]
+                   '--pkl-path', out_pkl_path]
     ).apply(use_gcp_secret('user-gcp-sa'))
 
 
-# @kfp.dsl.component
-# def count_component(input_path_pkl: dsl.PipelineParam, word: str):
-#     return kfp.dsl.ContainerOp(
-#         name='Count word component',
-#         image=f'{REGISTRY}/kf_count_word:1.0.0',
-#         arguments=['--path-pkl', input_path_pkl,
-#                    '--word', word]
-#     ).apply(use_gcp_secret('user-gcp-sa'))
+@kfp.dsl.component
+def count_component(input_pkl_path: dsl.PipelineParam, word: str):
+    return kfp.dsl.ContainerOp(
+        name='Count word component',
+        image=f'{REGISTRY}/kf_count_word:1.0.0',
+        arguments=['--pkl-path', input_pkl_path,
+                   '--word', word]
+    ).apply(use_gcp_secret('user-gcp-sa'))
 
 
-# Main -------------------------------------------------------------------------------------------------------------
+# Main -----------------------------------------------------------------------------------------------------------------
 def main(args):
     output_pipeline_dir = args.output_pipeline_dir
 
-    @dsl.pipeline(name="Store data pipeline",
-                  description="A pipeline to test volume mounting")
-    def build_pipeline(text_bucket_path: dsl.PipelineParam, pkl_volume_path: dsl.PipelineParam, word="Kubeflow"):
-        step_1 = prepare_component(text_path=text_bucket_path, out_path_pkl=pkl_volume_path)
-        # step_2 = count_component(input_path_pkl=pkl_volume_path, word=word)
-        # step_2.after(step_1)
+    @dsl.pipeline(name="Store data on bucket pipeline",
+                  description="A pipeline to test I/O bucket")
+    def build_pipeline(text_bucket_path: dsl.PipelineParam, pkl_bucket_path: dsl.PipelineParam, word="Kubeflow"):
+        step_1 = prepare_component(text_path=text_bucket_path, out_pkl_path=pkl_bucket_path)
+        step_2 = count_component(input_pkl_path=pkl_bucket_path, word=word)
+        step_2.after(step_1)
 
     pipeline_compiler = cmp.Compiler()
     pipeline_compiler.compile(pipeline_func=build_pipeline,

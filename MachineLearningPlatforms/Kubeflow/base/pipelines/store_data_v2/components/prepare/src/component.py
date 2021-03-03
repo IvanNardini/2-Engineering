@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # component.py
-# component is a simple component wrapper of data preparation step
+# component is a simple component wrapper of data processing step
 # Notice: In this case I assume to read data from Cloud Storage.
 # You have both pure storage APIs or tf. gfile.
 # For portability, I prefer tf.gfile because you can debug your model
@@ -20,7 +20,8 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
 
 
 # Helpers --------------------------------------------------------------------------------------------------------------
-def load_text(file_path: str) -> str:
+def load_file(file_path: str) -> str:
+    logging.info(f"Loading {file_path} file...")
     with gfile.GFile(name=file_path, mode='r') as file:
         text = file.read().replace("\n", " ")
     file.close()
@@ -28,6 +29,7 @@ def load_text(file_path: str) -> str:
 
 
 def store_data(word_list: list, out_path_pkl: str):
+    logging.info(f"Saving {out_path_pkl} pickle file...")
     with gfile.GFile(name=out_path_pkl, mode='w') as file:
         pickle.dump(word_list, file)
 
@@ -36,7 +38,7 @@ def store_data(word_list: list, out_path_pkl: str):
 def run_component(text_path:str, out_path_pkl:str):
     logging.info('Initiating Data Preparation component...')
     try:
-        text = load_text(file_path=text_path)
+        text = load_file(file_path=text_path)
         token_text = run_prepare(text)
         store_data(word_list=token_text,
                    out_path_pkl=out_path_pkl)
@@ -48,7 +50,7 @@ def run_component(text_path:str, out_path_pkl:str):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Run Data Preprocess")
+    parser = argparse.ArgumentParser(description="Run Prepare component")
 
     parser.add_argument('--text-path',
                         type=str,
@@ -63,5 +65,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     text_path = args.text_path
     out_path_pkl = args.pkl_path
-
-    run_component(text_path=text_path, out_path_pkl=out_path_pkl)
+    run_component(text_path=text_path,
+                  out_path_pkl=out_path_pkl)

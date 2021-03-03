@@ -7,20 +7,46 @@
 # For portability, I prefer tf.gfile because you can debug your model
 # locally and train it on cloud without changing a single line.
 
-from tensorflow import gfile
+from tensorflow.io import gfile
+from count import run_count_word
+import pickle
+import logging
+import argparse
 
 # Helpers --------------------------------------------------------------------------------------------------------------
-def load_text(file_path: str) -> str:
-    with gfile.Open(file=file_path, mode='r') as file:
+def load_file(file_path: str) -> str:
+    logging.info(f"Loading {file_path} file...")
+    with gfile.GFile(name=file_path, mode='r') as file:
         text = file.read().replace("\n", " ")
     file.close()
     return text
 
-def store_data(word_list: list, out_path_pkl: str):
-    with gfile.Open(out_path_pkl, 'w') as file:
-        pickle.dump(word_list, file)
+# Main -----------------------------------------------------------------------------------------------------------------
+def run_component(pkl_path:str, word:str):
+    logging.info('Initiating Count Words component...')
+    try:
+        words_list = load_file(file_path=text_path)
+        word_count = run_count_words(pkl_path=pkl_path, word=word)
+    except RuntimeError as error:
+        logging.info(error)
+    else:
+        logging.info('Count words component successfully completed!')
+    return out_path_pkl
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Run Cound Words component")
 
-    text_path = args.text_path
-    out_path_pkl = args.path_pkl
-    text = load_text(file_path=text_path)
+    parser.add_argument('--pkl-path',
+                        type=str,
+                        required=True,
+                        help='Path to store pickle')
+
+    parser.add_argument('--word',
+                        type=str,
+                        required=True,
+                        help='Word to count')
+
+    args = parser.parse_args()
+    input_pkl_path=args.pkl_path
+    input_word=args.word
+    run_component(pkl_path=input_pkl_path, word=input_word)

@@ -51,9 +51,9 @@ def main(args):
 
     @dsl.pipeline(name="Store data on bucket pipeline",
                   description="A pipeline to test I/O bucket")
-    def build_pipeline(text_bucket_path: dsl.PipelineParam, pkl_bucket_path: dsl.PipelineParam, word="Kubeflow"):
+    def build_pipeline(text_bucket_path: dsl.PipelineParam, pkl_bucket_path: dsl.PipelineParam, word:dsl.PipelineParam, count_path:dsl.PipelineParam):
         step_1 = prepare_component(text_path=text_bucket_path, out_pkl_path=pkl_bucket_path)
-        step_2 = count_component(input_pkl_path=pkl_bucket_path, word=word)
+        step_2 = count_component(input_pkl_path=pkl_bucket_path, word=word, count_path=count_path)
         step_2.after(step_1)
 
     pipeline_compiler = cmp.Compiler()

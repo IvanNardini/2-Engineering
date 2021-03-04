@@ -14,6 +14,7 @@ from uri import URI
 import kfp
 import kfp.dsl as dsl
 import kfp.components as cpt
+from kfp.components import func_to_container_op
 import kfp.compiler as cmp
 
 # Variables  -----------------------------------------------------------------------------------------------------------
@@ -29,6 +30,17 @@ gcs_download_component = kfp.components.load_component_from_file(filename=GCS_CO
 # Get word from text
 get_word_component = kfp.components.load_component_from_file(filename=GET_WORD_PATH)
 
+# Helper components
+@func_to_container_op
+def print_found(name: str):
+    print(f'I find the {name}')
+    return None
+
+@func_to_container_op
+def print_not_found(name: str):
+    print(f'I dont find the {name}')
+    return None
+
 
 # Pipeline -------------------------------------------------------------------------------------------------------------
 
@@ -39,18 +51,12 @@ def conditional_kubeflow_pipeline(uri_data_path: URI, name: str):
     step_1 = gcs_download_component(uri_data_path)
     # Check for name
     step_2 = get_word_component(text_path=step_1.output, word=name)
-    step_2.after(step_1)
-
-    # Add condition
-    def condition():
-        is_name = step_2.output
-        with dsl.Condition(is_name):
-            print(f'I find the {name}')
-            return None
-        with dsl.Condition(not is_name):
-            print(f'I dont find the {name}')
-            return None
-
+    # Condition
+    is_name = step_2.output
+    with dsl.Condition(is_name == 'True'):
+        print_found(name=name)
+    with dsl.Condition(is_name == 'False'):
+        print_not_found(name=name)
 
 # Main -----------------------------------------------------------------------------------------------------------------
 def run_pipeline(args):

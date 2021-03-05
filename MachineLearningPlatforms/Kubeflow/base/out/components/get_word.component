@@ -17,7 +17,7 @@ implementation:
     - |
       def get_word(text_path, word):
           def load_data(data_path):
-              with open(file=data_path, mode='w') as file:
+              with open(file=data_path, mode='r') as file:
                   text = file.read()
               file.close()
               return text

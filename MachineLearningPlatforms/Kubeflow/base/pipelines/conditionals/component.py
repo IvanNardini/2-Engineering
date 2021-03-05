@@ -17,7 +17,7 @@ import kfp.components as cpt
 
 def get_word(text_path: str, word: str) -> bool:
     def load_data(data_path: str):
-        with open(file=data_path, mode='w') as file:
+        with open(file=data_path, mode='r') as file:
             text = file.read()
         file.close()
         return text

@@ -21,6 +21,7 @@ implementation:
                   text = file.read()
               file.close()
               return text
+          text = load_data(text_path)
           text_lower = text.lower()
           word_lower = word.lower()
           return True if word_lower in text_lower else False

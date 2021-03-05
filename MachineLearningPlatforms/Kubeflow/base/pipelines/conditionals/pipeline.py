@@ -41,7 +41,6 @@ def print_not_found(name: str):
     print(f'I dont find the {name}')
     return None
 
-
 # Pipeline -------------------------------------------------------------------------------------------------------------
 
 @dsl.pipeline(name='Conditional Kubeflow Pipeline',
@@ -56,7 +55,7 @@ def conditional_kubeflow_pipeline(uri_data_path: URI, name: str):
     step_1 = gcs_download_component(uri_data_path)
     # step_1.add_pvolumes({'/data-processing': out_vol_op.volume})
     # Check for name
-    step_2 = get_word_component(text_path=step_1.output, word=name)
+    step_2 = get_word_component(text_path=step_1.outputs['Data'], word=name)
     step_2.after(step_1)
     # Condition
     is_name = step_2.output

@@ -34,12 +34,12 @@ get_word_component = kfp.components.load_component_from_file(filename=GET_WORD_P
 # Helper components
 @func_to_container_op
 def print_found(name: str):
-    print(f'I find the {name}')
+    print(f'I find the {name} term')
     return None
 
 @func_to_container_op
 def print_not_found(name: str):
-    print(f'I dont find the {name}')
+    print(f'I dont find the {name} term')
     return None
 
 # Pipeline -------------------------------------------------------------------------------------------------------------
@@ -49,12 +49,12 @@ def print_not_found(name: str):
 def conditional_kubeflow_pipeline(uri_data_path: URI, name: str):
     # General setting
     out_vol_op = dsl.VolumeOp(name='create volume',
-                              resource_name='data-processing',
+                              resource_name='data',
                               size="3Gi",
                               modes=dsl.VOLUME_MODE_RWO)
     # Download data
     step_1 = gcs_download_component(uri_data_path)
-    step_1.add_pvolumes({'/data-processing': out_vol_op.volume})
+    step_1.add_pvolumes({'/data': out_vol_op.volume})
     # Check for name
     step_2 = get_word_component(text=step_1.output, word=name)
     step_2.after(step_1)

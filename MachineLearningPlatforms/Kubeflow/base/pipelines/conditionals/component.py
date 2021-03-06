@@ -15,13 +15,13 @@ import kfp.components as cpt
 
 # Functions ------------------------------------------------------------------------------------------------------------
 
-def get_word(text_path: str, word: str) -> bool:
-    def load_data(data_path: str):
-        with open(file=data_path, mode='r') as file:
-            text = file.read()
-        file.close()
-        return text
-    text = load_data(text_path)
+def get_word(text: str, word: str) -> bool:
+    # def load_data(data_path: str):
+    #     with open(file=data_path, mode='r') as file:
+    #         text = file.read()
+    #     file.close()
+    #     return text
+    # text = load_data(text_path)
     text_lower = text.lower()
     word_lower = word.lower()
     return True if word_lower in text_lower else False

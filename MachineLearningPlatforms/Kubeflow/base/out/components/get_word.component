@@ -1,6 +1,6 @@
 name: Get word
 inputs:
-- {name: text_path, type: String}
+- {name: text, type: String}
 - {name: word, type: String}
 outputs:
 - {name: Output, type: Boolean}
@@ -15,13 +15,13 @@ implementation:
       printf "%s" "$0" > "$program_path"
       python3 -u "$program_path" "$@"
     - |
-      def get_word(text_path, word):
-          def load_data(data_path):
-              with open(file=data_path, mode='r') as file:
-                  text = file.read()
-              file.close()
-              return text
-          text = load_data(text_path)
+      def get_word(text, word):
+          # def load_data(data_path: str):
+          #     with open(file=data_path, mode='r') as file:
+          #         text = file.read()
+          #     file.close()
+          #     return text
+          # text = load_data(text_path)
           text_lower = text.lower()
           word_lower = word.lower()
           return True if word_lower in text_lower else False
@@ -35,7 +35,7 @@ implementation:
 
       import argparse
       _parser = argparse.ArgumentParser(prog='Get word', description='')
-      _parser.add_argument("--text-path", dest="text_path", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--text", dest="text", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--word", dest="word", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=1)
       _parsed_args = vars(_parser.parse_args())
@@ -59,8 +59,8 @@ implementation:
           with open(output_file, 'w') as f:
               f.write(_output_serializers[idx](_outputs[idx]))
     args:
-    - --text-path
-    - {inputValue: text_path}
+    - --text
+    - {inputValue: text}
     - --word
     - {inputValue: word}
     - '----output-paths'

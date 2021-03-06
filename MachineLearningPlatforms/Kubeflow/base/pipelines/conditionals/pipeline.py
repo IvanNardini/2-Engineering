@@ -56,7 +56,7 @@ def conditional_kubeflow_pipeline(uri_data_path: URI, name: str):
     step_1 = gcs_download_component(uri_data_path)
     step_1.add_pvolumes({'/data-processing': out_vol_op.volume})
     # Check for name
-    step_2 = get_word_component(text_path=os.path.join('/data-processing', str(step_1.output)), word=name)
+    step_2 = get_word_component(text=step_1.output, word=name)
     step_2.after(step_1)
     # Condition
     is_name = step_2.output

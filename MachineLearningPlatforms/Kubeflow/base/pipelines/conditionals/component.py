@@ -5,9 +5,8 @@
 # 1 - Define functions
 # 2 - Define lightweight python components
 # 3 - Write the component to a file
-# Goals are:
+# Goal is:
 # - Testing conditions with dsl.Condition
-# - Download component from Github
 
 import argparse
 import kfp.components as cpt
@@ -16,12 +15,6 @@ import kfp.components as cpt
 # Functions ------------------------------------------------------------------------------------------------------------
 
 def get_word(text: str, word: str) -> bool:
-    # def load_data(data_path: str):
-    #     with open(file=data_path, mode='r') as file:
-    #         text = file.read()
-    #     file.close()
-    #     return text
-    # text = load_data(text_path)
     text_lower = text.lower()
     word_lower = word.lower()
     return True if word_lower in text_lower else False

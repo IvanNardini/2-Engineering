@@ -6,8 +6,8 @@
 # 2 - Define pipeline
 # 3 - Compile Pipelines
 # Goals are:
+# - Testing download GCS component provided by Google
 # - Testing conditions with dsl.Condition
-# - Download component from Github
 
 import argparse
 from uri import URI
@@ -48,7 +48,7 @@ def print_not_found(name: str):
               description='Test conditions')
 def conditional_kubeflow_pipeline(uri_data_path: URI, name: str):
     # General setting
-    out_vol_op = dsl.VolumeOp(name='create volume',
+    out_vol_op = dsl.VolumeOp(name='Persistent Volume',
                               resource_name='data',
                               size="3Gi",
                               modes=dsl.VOLUME_MODE_RWO)

@@ -11,6 +11,7 @@
 
 import argparse
 from uri import URI
+import os
 import kfp
 import kfp.dsl as dsl
 import kfp.components as cpt
@@ -47,15 +48,15 @@ def print_not_found(name: str):
               description='Test conditions')
 def conditional_kubeflow_pipeline(uri_data_path: URI, name: str):
     # General setting
-    # out_vol_op = dsl.VolumeOp(name='create volume',
-    #                           resource_name='data-processing',
-    #                           size="3Gi",
-    #                           modes=dsl.VOLUME_MODE_RWO)
+    out_vol_op = dsl.VolumeOp(name='create volume',
+                              resource_name='data-processing',
+                              size="3Gi",
+                              modes=dsl.VOLUME_MODE_RWO)
     # Download data
     step_1 = gcs_download_component(uri_data_path)
-    # step_1.add_pvolumes({'/data-processing': out_vol_op.volume})
+    step_1.add_pvolumes({'/data-processing': out_vol_op.volume})
     # Check for name
-    step_2 = get_word_component(text_path=step_1.outputs['Data'], word=name)
+    step_2 = get_word_component(text_path=os.path.join('/data-processing', str(step_1.output)), word=name)
     step_2.after(step_1)
     # Condition
     is_name = step_2.output

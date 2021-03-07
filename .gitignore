@@ -7,3 +7,6 @@ MachineLearningPlatforms/Kubeflow/base/pipelines/hellokubeflow.egg-info
 MachineLearningPlatforms/Kubeflow/base/__init__.py
 MachineLearningPlatforms/Kubeflow/base/tests
 MachineLearningPlatforms/Kubeflow/base/.pytest_cache
+MachineLearningPlatforms/Kubeflow/ml-components/1_datapreparation/.ipynb_checkpoints
+MachineLearningPlatforms/Kubeflow/ml-components/1_datapreparation/base/data/.ipynb_checkpoints
+MachineLearningPlatforms/Kubeflow/ml-components/1_datapreparation/base/notebooks/.ipynb_checkpoints

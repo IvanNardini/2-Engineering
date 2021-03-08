@@ -1,6 +1,8 @@
 # General
 .DS_Store
 .idea
+*.pyc
+__init__.py
 
 MachineLearningPlatforms/Kubeflow/base/env
 MachineLearningPlatforms/Kubeflow/base/pipelines/hellokubeflow.egg-info
@@ -10,3 +12,4 @@ MachineLearningPlatforms/Kubeflow/base/.pytest_cache
 MachineLearningPlatforms/Kubeflow/ml-components/1_datapreparation/.ipynb_checkpoints
 MachineLearningPlatforms/Kubeflow/ml-components/1_datapreparation/base/data/.ipynb_checkpoints
 MachineLearningPlatforms/Kubeflow/ml-components/1_datapreparation/base/notebooks/.ipynb_checkpoints
+MachineLearningPlatforms/Kubeflow/ml-components/1_datapreparation/base/components/data_collection/kaggle.json

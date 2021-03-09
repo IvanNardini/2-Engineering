@@ -12,4 +12,4 @@ MachineLearningPlatforms/Kubeflow/base/.pytest_cache
 MachineLearningPlatforms/Kubeflow/ml-components/1_datapreparation/.ipynb_checkpoints
 MachineLearningPlatforms/Kubeflow/ml-components/1_datapreparation/women_clothing_ecom_reviews/data/.ipynb_checkpoints
 MachineLearningPlatforms/Kubeflow/ml-components/1_datapreparation/women_clothing_ecom_reviews/notebooks/.ipynb_checkpoints
-MachineLearningPlatforms/Kubeflow/ml-components/1_datapreparation/women_clothing_ecom_reviews/components/data_collection/kaggle.json
+MachineLearningPlatforms/Kubeflow/ml-components/1_datapreparation/women_clothing_ecom_reviews/pipeline/components/data_collection/kaggle.json

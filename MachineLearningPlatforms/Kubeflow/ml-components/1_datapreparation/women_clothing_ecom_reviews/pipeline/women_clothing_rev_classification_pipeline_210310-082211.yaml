@@ -1,0 +1,137 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: women-clothing-reviews-classification-ml-pipeline-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0, pipelines.kubeflow.org/pipeline_compilation_time: '2021-03-10T08:22:11.534376',
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "An example of Machine
+      Learning Pipeline", "inputs": [{"name": "config_file", "type": "URI"}], "name":
+      "Women Clothing Reviews Classification ML Pipeline"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0}
+spec:
+  entrypoint: women-clothing-reviews-classification-ml-pipeline
+  templates:
+  - name: collect-data
+    container:
+      args: [--config-file, '{{inputs.parameters.download-from-gcs-Data}}']
+      env:
+      - {name: GOOGLE_APPLICATION_CREDENTIALS, value: /secret/gcp-credentials/user-gcp-sa.json}
+      - {name: CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE, value: /secret/gcp-credentials/user-gcp-sa.json}
+      image: docker.io/in92/data_collect:1.0.0
+      volumeMounts:
+      - {mountPath: /secret/gcp-credentials, name: gcp-credentials-user-gcp-sa}
+    inputs:
+      parameters:
+      - {name: download-from-gcs-Data}
+    volumes:
+    - name: gcp-credentials-user-gcp-sa
+      secret: {secretName: user-gcp-sa}
+    metadata:
+      annotations: {pipelines.kubeflow.org/component_spec: '{"inputs": [{"name": "config_file",
+          "type": "PipelineParam"}], "name": "Data collection"}'}
+  - name: download-from-gcs
+    container:
+      args: []
+      command:
+      - bash
+      - -ex
+      - -c
+      - |
+        if [ -n "${GOOGLE_APPLICATION_CREDENTIALS}" ]; then
+            gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
+        fi
+
+        uri="$0"
+        output_path="$1"
+
+        # Checking whether the URI points to a single blob, a directory or a URI pattern
+        # URI points to a blob when that URI does not end with slash and listing that URI only yields the same URI
+        if [[ "$uri" != */ ]] && (gsutil ls "$uri" | grep --fixed-strings --line-regexp "$uri"); then
+            mkdir -p "$(dirname "$output_path")"
+            gsutil -m cp -r "$uri" "$output_path"
+        else
+            mkdir -p "$output_path" # When source path is a directory, gsutil requires the destination to also be a directory
+            gsutil -m rsync -r "$uri" "$output_path" # gsutil cp has different path handling than Linux cp. It always puts the source directory (name) inside the destination directory. gsutil rsync does not have that problem.
+        fi
+      - '{{inputs.parameters.config_file}}'
+      - /tmp/outputs/Data/data
+      image: google/cloud-sdk
+      volumeMounts:
+      - {mountPath: /pipe-config, name: persistent-volume}
+    inputs:
+      parameters:
+      - {name: config_file}
+      - {name: persistent-volume-name}
+    outputs:
+      parameters:
+      - name: download-from-gcs-Data
+        valueFrom: {path: /tmp/outputs/Data/data}
+      artifacts:
+      - {name: download-from-gcs-Data, path: /tmp/outputs/Data/data}
+    volumes:
+    - name: persistent-volume
+      persistentVolumeClaim: {claimName: '{{inputs.parameters.persistent-volume-name}}'}
+    metadata:
+      annotations: {pipelines.kubeflow.org/component_spec: '{"implementation": {"container":
+          {"command": ["bash", "-ex", "-c", "if [ -n \"${GOOGLE_APPLICATION_CREDENTIALS}\"
+          ]; then\n    gcloud auth activate-service-account --key-file=\"${GOOGLE_APPLICATION_CREDENTIALS}\"\nfi\n\nuri=\"$0\"\noutput_path=\"$1\"\n\n#
+          Checking whether the URI points to a single blob, a directory or a URI pattern\n#
+          URI points to a blob when that URI does not end with slash and listing that
+          URI only yields the same URI\nif [[ \"$uri\" != */ ]] && (gsutil ls \"$uri\"
+          | grep --fixed-strings --line-regexp \"$uri\"); then\n    mkdir -p \"$(dirname
+          \"$output_path\")\"\n    gsutil -m cp -r \"$uri\" \"$output_path\"\nelse\n    mkdir
+          -p \"$output_path\" # When source path is a directory, gsutil requires the
+          destination to also be a directory\n    gsutil -m rsync -r \"$uri\" \"$output_path\"
+          # gsutil cp has different path handling than Linux cp. It always puts the
+          source directory (name) inside the destination directory. gsutil rsync does
+          not have that problem.\nfi\n", {"inputValue": "GCS path"}, {"outputPath":
+          "Data"}], "image": "google/cloud-sdk"}}, "inputs": [{"name": "GCS path",
+          "type": "URI"}], "name": "Download from GCS", "outputs": [{"name": "Data"}]}',
+        pipelines.kubeflow.org/component_ref: '{"digest": "aae060a66fe91f144b6cba827cbc68a81338927e52837ebc433510f431a26d9c",
+          "url": "components/config_init/component.yaml"}', pipelines.kubeflow.org/arguments.parameters: '{"GCS
+          path": "{{inputs.parameters.config_file}}"}'}
+  - name: persistent-volume
+    resource:
+      action: create
+      manifest: |
+        apiVersion: v1
+        kind: PersistentVolumeClaim
+        metadata:
+          name: '{{workflow.name}}-data'
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 3Gi
+    outputs:
+      parameters:
+      - name: persistent-volume-manifest
+        valueFrom: {jsonPath: '{}'}
+      - name: persistent-volume-name
+        valueFrom: {jsonPath: '{.metadata.name}'}
+      - name: persistent-volume-size
+        valueFrom: {jsonPath: '{.status.capacity.storage}'}
+  - name: women-clothing-reviews-classification-ml-pipeline
+    inputs:
+      parameters:
+      - {name: config_file}
+    dag:
+      tasks:
+      - name: collect-data
+        template: collect-data
+        dependencies: [download-from-gcs]
+        arguments:
+          parameters:
+          - {name: download-from-gcs-Data, value: '{{tasks.download-from-gcs.outputs.parameters.download-from-gcs-Data}}'}
+      - name: download-from-gcs
+        template: download-from-gcs
+        dependencies: [persistent-volume]
+        arguments:
+          parameters:
+          - {name: config_file, value: '{{inputs.parameters.config_file}}'}
+          - {name: persistent-volume-name, value: '{{tasks.persistent-volume.outputs.parameters.persistent-volume-name}}'}
+      - {name: persistent-volume, template: persistent-volume}
+  arguments:
+    parameters:
+    - {name: config_file}
+  serviceAccountName: pipeline-runner

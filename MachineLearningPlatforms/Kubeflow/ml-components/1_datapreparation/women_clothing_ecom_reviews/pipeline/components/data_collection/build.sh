@@ -10,5 +10,5 @@ docker tag "$DOCKER_IMAGE" "$DOCKER_HOST/$DOCKER_REPO/$DOCKER_IMAGE"
 docker push "$DOCKER_HOST/$DOCKER_IMAGE"
 
 if [ -z "$MODE" ]; then
-  docker container run --rm -it -p 9090:9090 -v $(pwd):/usr/src/app $DOCKER_IMAGE --config-file config.yaml
+  docker container run --rm -it -p 9090:9090 -v $(pwd):/usr/src/app $DOCKER_IMAGE --config config.yaml --mode local
 fi

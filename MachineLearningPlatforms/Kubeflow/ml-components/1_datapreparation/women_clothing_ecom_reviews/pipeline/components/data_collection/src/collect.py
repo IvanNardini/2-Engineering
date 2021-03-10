@@ -24,10 +24,14 @@ from sklearn.model_selection import train_test_split
 # DataCollector --------------------------------------------------------------------------------------------------------
 class DataCollector():
 
-    def __init__(self, config_file):
+    def __init__(self, config, mode):
         try:
-            stream = open(config_file, 'r')
-            config = yaml.load(stream=stream, Loader=yaml.FullLoader)
+            #TODO: Check for one to one portability with cloud
+            if mode == 'cloud':
+                config = yaml.safe_load(config)
+            else:
+                stream = open(config, 'r')
+                config = yaml.load(stream=stream, Loader=yaml.FullLoader)
         except RuntimeError as error:
             logging.info(error)
             sys.exit(1)

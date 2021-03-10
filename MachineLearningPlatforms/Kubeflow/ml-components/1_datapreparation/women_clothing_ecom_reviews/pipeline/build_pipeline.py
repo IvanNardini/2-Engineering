@@ -20,7 +20,7 @@ REGISTRY = "docker.io/in92"
 def data_collection(config_file: dsl.PipelineParam):
     return kfp.dsl.ContainerOp(
         name='Collect Data',
-        image=f'{REGISTRY}/data-collect:1.0.0',
+        image=f'{REGISTRY}/data_collect:1.0.0',
         arguments=['--config-file', config_file]
     ).apply(use_gcp_secret('user-gcp-sa'))
 

@@ -1,4 +1,4 @@
-name: Download from GCS
+name: Read Pipeline configuration #changed the name
 inputs:
 - {name: GCS path, type: URI}
 outputs:

@@ -43,12 +43,12 @@ def run_build_pipeline(args):
         def build_pipeline(config: URI, mode: dsl.PipelineParam):
             # TODO: Check for one to one portability with cloud
             # General setting
-            out_vol_op = dsl.VolumeOp(name='Persistent Volume',
+            out_vol_op = dsl.VolumeOp(name='pipeline-volume',
                                       resource_name='data',
                                       size="3Gi",
                                       modes=dsl.VOLUME_MODE_RWO)
             step_0 = gcs_download_component(config)
-            step_0.add_pvolumes({'/pipe-config': out_vol_op.volume})
+            step_0.add_pvolumes({'/pipe-data': out_vol_op.volume})
             step_1 = data_collection(config=step_0.output, mode=mode)
             step_1.after(step_0)
 

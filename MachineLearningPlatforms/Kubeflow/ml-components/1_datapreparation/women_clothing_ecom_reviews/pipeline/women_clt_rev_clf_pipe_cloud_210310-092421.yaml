@@ -2,17 +2,18 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: women-clothing-reviews-classification-ml-pipeline-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0, pipelines.kubeflow.org/pipeline_compilation_time: '2021-03-10T08:22:11.534376',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0, pipelines.kubeflow.org/pipeline_compilation_time: '2021-03-10T09:24:21.059604',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "An example of Machine
-      Learning Pipeline", "inputs": [{"name": "config_file", "type": "URI"}], "name":
-      "Women Clothing Reviews Classification ML Pipeline"}'}
+      Learning Pipeline", "inputs": [{"name": "config", "type": "URI"}, {"name": "mode",
+      "type": "PipelineParam"}], "name": "Women Clothing Reviews Classification ML
+      Pipeline"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0}
 spec:
   entrypoint: women-clothing-reviews-classification-ml-pipeline
   templates:
   - name: collect-data
     container:
-      args: [--config-file, '{{inputs.parameters.download-from-gcs-Data}}']
+      args: [--config, '{{inputs.parameters.download-from-gcs-Data}}', --mode, '{{inputs.parameters.mode}}']
       env:
       - {name: GOOGLE_APPLICATION_CREDENTIALS, value: /secret/gcp-credentials/user-gcp-sa.json}
       - {name: CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE, value: /secret/gcp-credentials/user-gcp-sa.json}
@@ -22,12 +23,13 @@ spec:
     inputs:
       parameters:
       - {name: download-from-gcs-Data}
+      - {name: mode}
     volumes:
     - name: gcp-credentials-user-gcp-sa
       secret: {secretName: user-gcp-sa}
     metadata:
-      annotations: {pipelines.kubeflow.org/component_spec: '{"inputs": [{"name": "config_file",
-          "type": "PipelineParam"}], "name": "Data collection"}'}
+      annotations: {pipelines.kubeflow.org/component_spec: '{"inputs": [{"name": "config"},
+          {"name": "mode"}], "name": "Data collection"}'}
   - name: download-from-gcs
     container:
       args: []
@@ -52,14 +54,14 @@ spec:
             mkdir -p "$output_path" # When source path is a directory, gsutil requires the destination to also be a directory
             gsutil -m rsync -r "$uri" "$output_path" # gsutil cp has different path handling than Linux cp. It always puts the source directory (name) inside the destination directory. gsutil rsync does not have that problem.
         fi
-      - '{{inputs.parameters.config_file}}'
+      - '{{inputs.parameters.config}}'
       - /tmp/outputs/Data/data
       image: google/cloud-sdk
       volumeMounts:
       - {mountPath: /pipe-config, name: persistent-volume}
     inputs:
       parameters:
-      - {name: config_file}
+      - {name: config}
       - {name: persistent-volume-name}
     outputs:
       parameters:
@@ -88,7 +90,7 @@ spec:
           "type": "URI"}], "name": "Download from GCS", "outputs": [{"name": "Data"}]}',
         pipelines.kubeflow.org/component_ref: '{"digest": "aae060a66fe91f144b6cba827cbc68a81338927e52837ebc433510f431a26d9c",
           "url": "components/config_init/component.yaml"}', pipelines.kubeflow.org/arguments.parameters: '{"GCS
-          path": "{{inputs.parameters.config_file}}"}'}
+          path": "{{inputs.parameters.config}}"}'}
   - name: persistent-volume
     resource:
       action: create
@@ -114,7 +116,8 @@ spec:
   - name: women-clothing-reviews-classification-ml-pipeline
     inputs:
       parameters:
-      - {name: config_file}
+      - {name: config}
+      - {name: mode}
     dag:
       tasks:
       - name: collect-data
@@ -123,15 +126,17 @@ spec:
         arguments:
           parameters:
           - {name: download-from-gcs-Data, value: '{{tasks.download-from-gcs.outputs.parameters.download-from-gcs-Data}}'}
+          - {name: mode, value: '{{inputs.parameters.mode}}'}
       - name: download-from-gcs
         template: download-from-gcs
         dependencies: [persistent-volume]
         arguments:
           parameters:
-          - {name: config_file, value: '{{inputs.parameters.config_file}}'}
+          - {name: config, value: '{{inputs.parameters.config}}'}
           - {name: persistent-volume-name, value: '{{tasks.persistent-volume.outputs.parameters.persistent-volume-name}}'}
       - {name: persistent-volume, template: persistent-volume}
   arguments:
     parameters:
-    - {name: config_file}
+    - {name: config}
+    - {name: mode}
   serviceAccountName: pipeline-runner

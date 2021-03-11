@@ -7,6 +7,8 @@
 # Libraries ------------------------------------------------------------------------------------------------------------
 import argparse
 import logging.config
+import yaml
+import sys
 from src.collect import DataCollector
 
 # Settings -------------------------------------------------------------------------------------------------------------
@@ -17,11 +19,24 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
 def run_collect(args):
     config = args.config
     mode = args.mode
-    collector = DataCollector(config=config, mode=mode)
-    raw_df = collector.extract()
-    x_train, x_test, x_val, y_train, y_test, y_val = collector.transform(raw_df)
-    collector.load(x_train, x_test, x_val,
-                   y_train, y_test, y_val)
+
+    logging.info('Initializing pipeline configuration...')
+    try:
+        # TODO: Check for one to one portability with cloud
+        if mode == 'cloud':
+            config = yaml.safe_load(config)
+        else:
+            stream = open(config, 'r')
+            config = yaml.load(stream=stream, Loader=yaml.FullLoader)
+    except RuntimeError as error:
+        logging.info(error)
+        sys.exit(1)
+    else:
+        collector = DataCollector(config=config)
+        raw_df = collector.extract()
+        x_train, x_test, x_val, y_train, y_test, y_val = collector.transform(raw_df)
+        collector.load(x_train, x_test, x_val,
+                       y_train, y_test, y_val)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run data collector")

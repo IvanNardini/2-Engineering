@@ -10,7 +10,6 @@
 import os
 import logging
 import sys
-import yaml
 
 ## Extract
 import kaggle
@@ -24,28 +23,17 @@ from sklearn.model_selection import train_test_split
 # DataCollector --------------------------------------------------------------------------------------------------------
 class DataCollector():
 
-    def __init__(self, config, mode):
-        try:
-            # TODO: Check for one to one portability with cloud
-            if mode == 'cloud':
-                config = yaml.safe_load(config)
-            else:
-                stream = open(config, 'r')
-                config = yaml.load(stream=stream, Loader=yaml.FullLoader)
-        except RuntimeError as error:
-            logging.info(error)
-            sys.exit(1)
-        else:
-            self.dataset = config['dataset']
-            self.raw_path = config['raw_path']
-            self.raw_data = config['raw_data']
-            self.variables = config['variables']
-            self.target = config['target']
-            self.random_state = config['random_state']
-            self.test_size = config['test_size']
-            self.val_size = config['val_size']
-            self.interim_path = config['interim_path']
-            self.df_names = config['interim_data']
+    def __init__(self, config):
+        self.dataset = config['dataset']
+        self.raw_path = config['raw_path']
+        self.raw_data = config['raw_data']
+        self.variables = config['variables']
+        self.target = config['target']
+        self.random_state = config['random_state']
+        self.test_size = config['test_size']
+        self.val_size = config['val_size']
+        self.interim_path = config['interim_path']
+        self.df_names = config['interim_data']
 
     def extract(self):
         logging.info('Initiating Data Extraction Processing...')
@@ -61,6 +49,7 @@ class DataCollector():
                                               unzip=True)
             logging.info('Loading the data...')
             raw_df = pd.read_csv(os.path.join(self.raw_path, self.raw_data))
+            print(raw_df.head(5))
         return raw_df
 
     def transform(self, raw_df):

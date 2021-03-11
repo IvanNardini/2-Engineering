@@ -28,7 +28,13 @@ def data_collection(config, mode):
         image=f'{REGISTRY}/data_collect:1.0.0',
         arguments=['--config', config,
                    '--mode', mode]
+        #TODO add file_output to store data in volume
     ).apply(use_gcp_secret('user-gcp-sa'))
+
+@kfp.dsl.component
+def data_preparation(config, mode):
+    # TODO add data prep function
+    pass
 
 
 # run_build_pipeline ---------------------------------------------------------------------------------------------------

@@ -45,6 +45,7 @@ class DataCollector():
             self.test_size = config['test_size']
             self.val_size = config['val_size']
             self.interim_path = config['interim_path']
+            self.index = config['index']
 
     def extract(self):
         logging.info('Initiating Data Extraction Processing...')
@@ -108,7 +109,7 @@ class DataCollector():
             y_dfs = [y_train, y_test, y_val]
             y_df_names = ['y_train.csv', 'y_test.csv', 'y_val.csv']
             for df, df_name in zip(y_dfs, y_df_names):
-                df.to_csv(os.path.join(self.interim_path, df_name), index_label='idx')
+                df.to_csv(os.path.join(self.interim_path, df_name), index_label=self.index)
         except RuntimeError as error:
             logging.info(error)
             sys.exit(1)

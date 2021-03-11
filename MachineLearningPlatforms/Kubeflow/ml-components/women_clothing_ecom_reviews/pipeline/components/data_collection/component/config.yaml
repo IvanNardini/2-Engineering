@@ -8,5 +8,8 @@ variables:
 random_state: 8
 test_size: 0.2
 val_size: 0.25
-interim_path: 'data/interim/'
-index: 'idx'
+interim_path: 'data/interim'
+interim_data:
+  - 'train.csv'
+  - 'test.csv'
+  - 'val.csv'

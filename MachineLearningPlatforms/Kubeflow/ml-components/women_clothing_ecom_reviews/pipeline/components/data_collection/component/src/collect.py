@@ -26,7 +26,7 @@ class DataCollector():
 
     def __init__(self, config, mode):
         try:
-            #TODO: Check for one to one portability with cloud
+            # TODO: Check for one to one portability with cloud
             if mode == 'cloud':
                 config = yaml.safe_load(config)
             else:
@@ -45,7 +45,7 @@ class DataCollector():
             self.test_size = config['test_size']
             self.val_size = config['val_size']
             self.interim_path = config['interim_path']
-            self.index = config['index']
+            self.df_names = config['interim_data']
 
     def extract(self):
         logging.info('Initiating Data Extraction Processing...')
@@ -102,20 +102,13 @@ class DataCollector():
             os.mkdir(path=self.interim_path)
             logging.info('Loading data...')
             x_dfs = [x_train, x_test, x_val]
-            x_df_names = ['X_train.csv', 'X_test.csv', 'X_val.csv']
-            for df, df_name in zip(x_dfs, x_df_names):
-                df.to_csv(os.path.join(self.interim_path, df_name), index_label='idx')
-
             y_dfs = [y_train, y_test, y_val]
-            y_df_names = ['y_train.csv', 'y_test.csv', 'y_val.csv']
-            for df, df_name in zip(y_dfs, y_df_names):
-                df.to_csv(os.path.join(self.interim_path, df_name), index_label=self.index)
+            for x_df, y_df, df_name in zip(x_dfs, y_dfs, self.df_names):
+                df = pd.merge(x_df, y_df, how="left", left_index=True, right_index=True)
+                df.to_csv(os.path.join(self.interim_path, df_name), index=False)
         except RuntimeError as error:
             logging.info(error)
             sys.exit(1)
         else:
             logging.info('Data successfully loaded!')
         return 0
-
-
-

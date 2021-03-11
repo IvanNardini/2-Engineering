@@ -33,11 +33,10 @@ class DataPreparer():
             logging.info(error)
             sys.exit(1)
         else:
-            self.interim_path = config['interim_path']
             self.random_state = config['random_state']
             self.lang = config['lang']
             self.text_var = config['text']
-            self.text_process = config['text_processed']
+            self.text_process = config['text-processed']
 
     def transform(self, data):
         interim_data = data.copy()

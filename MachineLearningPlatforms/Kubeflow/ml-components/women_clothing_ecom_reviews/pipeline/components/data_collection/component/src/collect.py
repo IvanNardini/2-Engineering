@@ -47,7 +47,7 @@ class DataCollector():
             kaggle.api.dataset_download_files(dataset=self.dataset,
                                               path=self.raw_path,
                                               unzip=True)
-            logging.info('Loading the data...')
+            logging.info(f'Loading the data under {self.raw_path}...')
             raw_df = pd.read_csv(os.path.join(self.raw_path, self.raw_data))
             print(raw_df.head(5))
         return raw_df
@@ -89,7 +89,7 @@ class DataCollector():
         logging.info('Initiating Data Loading...')
         try:
             os.mkdir(path=self.interim_path)
-            logging.info('Loading data...')
+            logging.info(f'Loading data to {self.interim_path}...')
             x_dfs = [x_train, x_test, x_val]
             y_dfs = [y_train, y_test, y_val]
             for x_df, y_df, df_name in zip(x_dfs, y_dfs, self.df_names):
@@ -99,5 +99,5 @@ class DataCollector():
             logging.info(error)
             sys.exit(1)
         else:
-            logging.info('Data successfully loaded!')
+            logging.info(f'Data successfully loaded under {self.interim_path}')
         return 0

@@ -38,6 +38,7 @@ def run_collect(args):
         collector.load(x_train, x_test, x_val,
                        y_train, y_test, y_val)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run data collector")
     parser.add_argument('--config',

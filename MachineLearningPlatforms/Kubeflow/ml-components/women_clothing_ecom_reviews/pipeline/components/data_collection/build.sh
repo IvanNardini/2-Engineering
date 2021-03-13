@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-DOCKER_HOST=${1:-docker.io}
-DOCKER_REPO=${2:-in92}
-DOCKER_IMAGE=${3:-data_collect:1.0.0}
+DOCKER_IMAGE=${1:-data_collect:1.0.0}
+DOCKER_HOST=${2:-docker.io}
+DOCKER_REPO=${3:-in92}
 MODE=${4}
 
 docker build -t "$DOCKER_IMAGE" .

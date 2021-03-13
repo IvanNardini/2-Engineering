@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: women-clothing-reviews-classification-ml-pipeline-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0, pipelines.kubeflow.org/pipeline_compilation_time: '2021-03-12T07:21:58.716256',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0, pipelines.kubeflow.org/pipeline_compilation_time: '2021-03-13T10:24:36.700094',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "An example of Machine
       Learning Pipeline", "inputs": [{"name": "config", "type": "URI"}, {"name": "mode",
       "type": "PipelineParam"}], "name": "Women Clothing Reviews Classification ML
@@ -57,26 +57,6 @@ spec:
         valueFrom: {jsonPath: '{.metadata.name}'}
       - name: pipeline-volume-size
         valueFrom: {jsonPath: '{.status.capacity.storage}'}
-  - name: prepare-data
-    container:
-      args: [--config, '{{inputs.parameters.read-pipeline-configuration-Data}}', --mode,
-        '{{inputs.parameters.mode}}']
-      env:
-      - {name: GOOGLE_APPLICATION_CREDENTIALS, value: /secret/gcp-credentials/user-gcp-sa.json}
-      - {name: CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE, value: /secret/gcp-credentials/user-gcp-sa.json}
-      image: docker.io/in92/data_prepare:1.0.0
-      volumeMounts:
-      - {mountPath: /secret/gcp-credentials, name: gcp-credentials-user-gcp-sa}
-    inputs:
-      parameters:
-      - {name: mode}
-      - {name: read-pipeline-configuration-Data}
-    volumes:
-    - name: gcp-credentials-user-gcp-sa
-      secret: {secretName: user-gcp-sa}
-    metadata:
-      annotations: {pipelines.kubeflow.org/component_spec: '{"inputs": [{"name": "config"},
-          {"name": "mode"}], "name": "Data preparation"}'}
   - name: read-pipeline-configuration
     container:
       args: []
@@ -154,13 +134,6 @@ spec:
           - {name: pipeline-volume-name, value: '{{tasks.pipeline-volume.outputs.parameters.pipeline-volume-name}}'}
           - {name: read-pipeline-configuration-Data, value: '{{tasks.read-pipeline-configuration.outputs.parameters.read-pipeline-configuration-Data}}'}
       - {name: pipeline-volume, template: pipeline-volume}
-      - name: prepare-data
-        template: prepare-data
-        dependencies: [collect-data, read-pipeline-configuration]
-        arguments:
-          parameters:
-          - {name: mode, value: '{{inputs.parameters.mode}}'}
-          - {name: read-pipeline-configuration-Data, value: '{{tasks.read-pipeline-configuration.outputs.parameters.read-pipeline-configuration-Data}}'}
       - name: read-pipeline-configuration
         template: read-pipeline-configuration
         dependencies: [pipeline-volume]

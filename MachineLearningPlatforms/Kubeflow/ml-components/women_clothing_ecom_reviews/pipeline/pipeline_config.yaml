@@ -2,7 +2,7 @@
 random_state: 8
 #Data Processing
 dataset: 'nicapotato/womens-ecommerce-clothing-reviews'
-raw_path: '/pipe-data/data/raw'
+raw_path: 'data/raw'
 raw_data: 'Womens Clothing E-Commerce Reviews.csv'
 target: 'recommended_ind'
 variables:
@@ -10,7 +10,7 @@ variables:
   - 'review_text'
 test_size: 0.2
 val_size: 0.25
-interim_path: '/pipe-data/data/interim'
+interim_path: 'data/interim'
 #Data Preparation
 interim_data:
   - 'train.csv'
@@ -19,4 +19,4 @@ interim_data:
 lang: 'english'
 text: 'review_text'
 text-processed: 'review_text_processed'
-processed_path: '/pipe-data/data/processed'
+processed_path: 'data/processed'

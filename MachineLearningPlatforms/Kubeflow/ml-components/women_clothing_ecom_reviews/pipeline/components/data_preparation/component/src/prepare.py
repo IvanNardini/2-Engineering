@@ -19,19 +19,16 @@ import nltk
 nltk.download('punkt')
 from nltk.tokenize import word_tokenize
 from .helpers import remove_sw, stemmer
-from .helpers import load_data, save_data
 
 
 # DataPreparer --------------------------------------------------------------------------------------------------------
 class DataPreparer():
 
     def __init__(self, config):
-        self.data_path = config['interim_path']
         self.random_state = config['random_state']
         self.lang = config['lang']
         self.text_var = config['text']
         self.text_process = config['text-processed']
-        self.out_path = config['processed_path']
 
     def transform(self, data):
         logging.info('Initiating Text Preparation processing...')

@@ -28,18 +28,17 @@ def data_collection(config, mode):
         image=f'{REGISTRY}/data_collect:1.0.0',
         arguments=['--config', config,
                    '--mode', mode],
-        file_outputs={'pipe-data': '/pipe-data'}
     ).apply(use_gcp_secret('user-gcp-sa'))
 
-@kfp.dsl.component
-def data_preparation(config, mode):
-    return kfp.dsl.ContainerOp(
-        name='Prepare Data',
-        image=f'{REGISTRY}/data_prepare:1.0.0',
-        arguments=['--config', config,
-                   '--mode', mode],
-        file_outputs = {'pipe-data': '/pipe-data'}
-    ).apply(use_gcp_secret('user-gcp-sa'))
+
+# @kfp.dsl.component
+# def data_preparation(config, mode):
+#     return kfp.dsl.ContainerOp(
+#         name='Prepare Data',
+#         image=f'{REGISTRY}/data_prepare:1.0.0',
+#         arguments=['--config', config,
+#                    '--mode', mode],
+#     ).apply(use_gcp_secret('user-gcp-sa'))
 
 
 # run_build_pipeline ---------------------------------------------------------------------------------------------------
@@ -63,9 +62,9 @@ def run_build_pipeline(args):
             step_1 = data_collection(config=step_0.output, mode=mode)
             step_1.add_pvolumes({'/pipe-data': out_vol_op.volume})
             step_1.after(step_0)
-            step_2 = data_preparation(config=step_0.output, mode=mode)
-            step_2.add_pvolumes({'/pipe-data': out_vol_op.volume})
-            step_2.after(step_1)
+            # step_2 = data_preparation(config=step_0.output, mode=mode)
+            # step_2.add_pvolumes({'/pipe-data': out_vol_op.volume})
+            # step_2.after(step_1)
 
     pipeline_complier = cmp.Compiler()
     pipeline_complier.compile(pipeline_func=build_pipeline,

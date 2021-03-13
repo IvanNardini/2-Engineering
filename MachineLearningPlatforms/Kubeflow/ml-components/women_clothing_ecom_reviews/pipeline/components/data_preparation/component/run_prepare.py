@@ -20,6 +20,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
 def run_collect(args):
     config = args.config
     mode = args.mode
+    #TODO: Add input path param 
     try:
         # TODO: Check for one to one portability with cloud
         if mode == 'cloud':

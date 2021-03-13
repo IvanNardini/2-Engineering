@@ -19,6 +19,9 @@ import pandas as pd
 from imblearn.over_sampling import RandomOverSampler
 from sklearn.model_selection import train_test_split
 
+## Load
+from tensorflow.io import gfile
+
 
 # DataCollector --------------------------------------------------------------------------------------------------------
 class DataCollector():
@@ -85,7 +88,7 @@ class DataCollector():
 
         return x_train, x_test, x_val, y_train, y_test, y_val
 
-    def load(self, x_train, x_test, x_val, y_train, y_test, y_val):
+    def load(self, x_train, x_test, x_val, y_train, y_test, y_val, mode):
         logging.info('Initiating Data Loading...')
         try:
             os.mkdir(path=self.interim_path)
@@ -95,6 +98,11 @@ class DataCollector():
             for x_df, y_df, df_name in zip(x_dfs, y_dfs, self.df_names):
                 df = pd.merge(x_df, y_df, how="left", left_index=True, right_index=True)
                 df.to_csv(os.path.join(self.interim_path, df_name), index=False)
+                if mode == 'cloud':
+                    logging.info('Loading data to GCS...')
+                    with gfile.GFile(name=os.path.join(self.interim_path, df_name), mode='w') as file:
+                        df.to_csv(file, index=False)
+
         except RuntimeError as error:
             logging.info(error)
             sys.exit(1)

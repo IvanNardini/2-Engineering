@@ -36,7 +36,7 @@ def run_collect(args):
         raw_df = collector.extract()
         x_train, x_test, x_val, y_train, y_test, y_val = collector.transform(raw_df)
         collector.load(x_train, x_test, x_val,
-                       y_train, y_test, y_val)
+                       y_train, y_test, y_val, mode=mode)
 
 
 if __name__ == '__main__':

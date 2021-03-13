@@ -17,9 +17,9 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
 
 # Main -----------------------------------------------------------------------------------------------------------------
 def run_collect(args):
-    config = args.config
     mode = args.mode
     bucket = args.bucket
+    config = args.config
 
     logging.info('Initializing pipeline configuration...')
     try:
@@ -47,8 +47,12 @@ if __name__ == '__main__':
     parser.add_argument('--config',
                         help='path to configuration yaml file')
     parser.add_argument('--mode',
-                        help='where you run the code')
+                        required=False,
+                        default='local',
+                        help='where you run the pipeline')
     parser.add_argument('--bucket',
-                        help='where you run the code')
+                        required=False,
+                        default=None,
+                        help='if cloud, the bucket to stage output')
     args = parser.parse_args()
     run_collect(args)

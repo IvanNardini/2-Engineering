@@ -2,12 +2,11 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: women-clothing-reviews-classification-ml-pipeline-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0, pipelines.kubeflow.org/pipeline_compilation_time: '2021-03-13T14:06:32.940506',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0, pipelines.kubeflow.org/pipeline_compilation_time: '2021-03-13T14:47:51.390559',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "An example of Machine
-      Learning Pipeline", "inputs": [{"name": "config", "type": "URI"}, {"default":
-      "local", "name": "mode", "optional": true, "type": "PipelineParam"}, {"name":
-      "bucket", "optional": true, "type": "URI"}], "name": "Women Clothing Reviews
-      Classification ML Pipeline"}'}
+      Learning Pipeline", "inputs": [{"name": "config", "type": "URI"}, {"name": "mode",
+      "type": "PipelineParam"}, {"name": "bucket", "type": "URI"}], "name": "Women
+      Clothing Reviews Classification ML Pipeline"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0}
 spec:
   entrypoint: women-clothing-reviews-classification-ml-pipeline
@@ -19,7 +18,7 @@ spec:
       env:
       - {name: GOOGLE_APPLICATION_CREDENTIALS, value: /secret/gcp-credentials/user-gcp-sa.json}
       - {name: CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE, value: /secret/gcp-credentials/user-gcp-sa.json}
-      image: docker.io/in92/data_collect:1.0.1
+      image: docker.io/in92/data_collect:1.0.2
       volumeMounts:
       - {mountPath: /secret/gcp-credentials, name: gcp-credentials-user-gcp-sa}
     inputs:
@@ -112,6 +111,6 @@ spec:
   arguments:
     parameters:
     - {name: config}
-    - {name: mode, value: local}
+    - {name: mode}
     - {name: bucket}
   serviceAccountName: pipeline-runner

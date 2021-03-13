@@ -26,7 +26,7 @@ gcs_download_component = kfp.components.load_component_from_file(filename=GCS_CO
 def data_collection(config, mode, bucket):
     return kfp.dsl.ContainerOp(
         name='Collect Data',
-        image=f'{REGISTRY}/data_collect:1.0.1',
+        image=f'{REGISTRY}/data_collect:1.0.2',
         arguments=['--config', config,
                    '--mode', mode,
                    '--bucket', bucket],
@@ -49,11 +49,12 @@ def run_build_pipeline(args):
     env = args.mode
     pipe_name = f"women_clt_rev_clf_pipe_{env}_{datetime.datetime.now().strftime('%y%m%d-%H%M%S')}.yaml"
 
+    # TODO: Check for one to one portability with cloud, add on prem in case
     if env == 'cloud':
         @dsl.pipeline(name="Women Clothing Reviews Classification ML Pipeline",
                       description="An example of Machine Learning Pipeline")
-        def build_pipeline(config: URI, mode: dsl.PipelineParam = 'local', bucket: URI = None):
-            # TODO: Check for one to one portability with cloud
+        def build_pipeline(config: URI, mode: dsl.PipelineParam, bucket: URI):
+
             step_0 = gcs_download_component(config)
             step_1 = data_collection(config=step_0.output, mode=mode, bucket=bucket)
             step_1.after(step_0)
@@ -68,7 +69,10 @@ def run_build_pipeline(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run pipeline builder")
-    parser.add_argument('--out-pipe-dir', default='../deliverables/pipeline')
-    parser.add_argument('--mode', default='cloud')
+    parser.add_argument('--out-pipe-dir',
+                        default='../deliverables/pipeline')
+    parser.add_argument('--mode',
+                        required=False,
+                        default='cloud')
     args = parser.parse_args()
     run_build_pipeline(args=args)

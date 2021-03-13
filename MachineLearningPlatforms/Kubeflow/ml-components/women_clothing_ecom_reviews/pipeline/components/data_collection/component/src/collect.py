@@ -38,6 +38,7 @@ class DataCollector():
         self.interim_path = config['interim_path']
         self.df_names = config['interim_data']
 
+
     def extract(self):
         logging.info('Initiating Data Extraction Processing...')
         try:
@@ -87,7 +88,8 @@ class DataCollector():
 
         return x_train, x_test, x_val, y_train, y_test, y_val
 
-    def load(self, x_train, x_test, x_val, y_train, y_test, y_val, mode, bucket):
+    def load(self, x_train, x_test, x_val, y_train, y_test, y_val,
+             mode, bucket):
         logging.info('Initiating Data Loading...')
         try:
             os.mkdir(path=self.interim_path)
@@ -96,7 +98,7 @@ class DataCollector():
             for x_df, y_df, df_name in zip(x_dfs, y_dfs, self.df_names):
                 df = pd.merge(x_df, y_df, how="left", left_index=True, right_index=True)
                 if mode == 'cloud':
-                    out_csv_gcs = f'gs://{bucket}/{self.interim_path}/{df_name}'
+                    out_csv_gcs = f'{bucket}/{self.interim_path}/{df_name}'
                     logging.info(f'Loading data to {out_csv_gcs}...')
                     with gfile.GFile(name=out_csv_gcs, mode='w') as file:
                         df.to_csv(file, index=False)

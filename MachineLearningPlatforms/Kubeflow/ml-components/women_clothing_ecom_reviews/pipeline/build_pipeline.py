@@ -21,6 +21,7 @@ REGISTRY = "docker.io/in92"
 
 gcs_download_component = kfp.components.load_component_from_file(filename=GCS_COMPONENT_PATH)
 
+
 @kfp.dsl.component
 def data_collection(config, mode):
     return kfp.dsl.ContainerOp(
@@ -50,10 +51,10 @@ def run_build_pipeline(args):
     if env == 'cloud':
         @dsl.pipeline(name="Women Clothing Reviews Classification ML Pipeline",
                       description="An example of Machine Learning Pipeline")
-        def build_pipeline(config: URI, mode: dsl.PipelineParam):
+        def build_pipeline(config: URI, mode: dsl.PipelineParam = 'local', bucket: URI = None):
             # TODO: Check for one to one portability with cloud
             step_0 = gcs_download_component(config)
-            step_1 = data_collection(config=step_0.output, mode=mode)
+            step_1 = data_collection(config=step_0.output, mode=mode, bucket=bucket)
             step_1.after(step_0)
             # step_2 = data_preparation(config=step_0.output, mode=mode)
             # step_2.add_pvolumes({'/pipe-data': out_vol_op.volume})

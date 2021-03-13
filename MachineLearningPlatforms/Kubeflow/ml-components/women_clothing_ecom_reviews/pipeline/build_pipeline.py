@@ -52,22 +52,15 @@ def run_build_pipeline(args):
                       description="An example of Machine Learning Pipeline")
         def build_pipeline(config: URI, mode: dsl.PipelineParam):
             # TODO: Check for one to one portability with cloud
-            # General setting
-            out_vol_op = dsl.VolumeOp(name='pipeline-volume',
-                                      resource_name='data',
-                                      size="3Gi",
-                                      modes=dsl.VOLUME_MODE_RWO)
             step_0 = gcs_download_component(config)
-            step_0.add_pvolumes({'/pipe-data': out_vol_op.volume})
             step_1 = data_collection(config=step_0.output, mode=mode)
-            step_1.add_pvolumes({'/pipe-data': out_vol_op.volume})
             step_1.after(step_0)
             # step_2 = data_preparation(config=step_0.output, mode=mode)
             # step_2.add_pvolumes({'/pipe-data': out_vol_op.volume})
             # step_2.after(step_1)
 
-    pipeline_complier = cmp.Compiler()
-    pipeline_complier.compile(pipeline_func=build_pipeline,
+    pipeline_compiler = cmp.Compiler()
+    pipeline_compiler.compile(pipeline_func=build_pipeline,
                               package_path=os.path.join(out_pipe_dir, pipe_name))
 
 

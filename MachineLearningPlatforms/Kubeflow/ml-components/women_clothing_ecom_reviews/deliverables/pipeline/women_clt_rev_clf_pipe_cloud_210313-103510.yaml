@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: women-clothing-reviews-classification-ml-pipeline-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0, pipelines.kubeflow.org/pipeline_compilation_time: '2021-03-13T10:24:36.700094',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0, pipelines.kubeflow.org/pipeline_compilation_time: '2021-03-13T10:35:10.313171',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "An example of Machine
       Learning Pipeline", "inputs": [{"name": "config", "type": "URI"}, {"name": "mode",
       "type": "PipelineParam"}], "name": "Women Clothing Reviews Classification ML
@@ -21,42 +21,16 @@ spec:
       image: docker.io/in92/data_collect:1.0.0
       volumeMounts:
       - {mountPath: /secret/gcp-credentials, name: gcp-credentials-user-gcp-sa}
-      - {mountPath: /pipe-data, name: pipeline-volume}
     inputs:
       parameters:
       - {name: mode}
-      - {name: pipeline-volume-name}
       - {name: read-pipeline-configuration-Data}
     volumes:
     - name: gcp-credentials-user-gcp-sa
       secret: {secretName: user-gcp-sa}
-    - name: pipeline-volume
-      persistentVolumeClaim: {claimName: '{{inputs.parameters.pipeline-volume-name}}'}
     metadata:
       annotations: {pipelines.kubeflow.org/component_spec: '{"inputs": [{"name": "config"},
           {"name": "mode"}], "name": "Data collection"}'}
-  - name: pipeline-volume
-    resource:
-      action: create
-      manifest: |
-        apiVersion: v1
-        kind: PersistentVolumeClaim
-        metadata:
-          name: '{{workflow.name}}-data'
-        spec:
-          accessModes:
-          - ReadWriteOnce
-          resources:
-            requests:
-              storage: 3Gi
-    outputs:
-      parameters:
-      - name: pipeline-volume-manifest
-        valueFrom: {jsonPath: '{}'}
-      - name: pipeline-volume-name
-        valueFrom: {jsonPath: '{.metadata.name}'}
-      - name: pipeline-volume-size
-        valueFrom: {jsonPath: '{.status.capacity.storage}'}
   - name: read-pipeline-configuration
     container:
       args: []
@@ -84,21 +58,15 @@ spec:
       - '{{inputs.parameters.config}}'
       - /tmp/outputs/Data/data
       image: google/cloud-sdk
-      volumeMounts:
-      - {mountPath: /pipe-data, name: pipeline-volume}
     inputs:
       parameters:
       - {name: config}
-      - {name: pipeline-volume-name}
     outputs:
       parameters:
       - name: read-pipeline-configuration-Data
         valueFrom: {path: /tmp/outputs/Data/data}
       artifacts:
       - {name: read-pipeline-configuration-Data, path: /tmp/outputs/Data/data}
-    volumes:
-    - name: pipeline-volume
-      persistentVolumeClaim: {claimName: '{{inputs.parameters.pipeline-volume-name}}'}
     metadata:
       annotations: {pipelines.kubeflow.org/component_spec: '{"implementation": {"container":
           {"command": ["bash", "-ex", "-c", "if [ -n \"${GOOGLE_APPLICATION_CREDENTIALS}\"
@@ -127,20 +95,16 @@ spec:
       tasks:
       - name: collect-data
         template: collect-data
-        dependencies: [pipeline-volume, read-pipeline-configuration]
+        dependencies: [read-pipeline-configuration]
         arguments:
           parameters:
           - {name: mode, value: '{{inputs.parameters.mode}}'}
-          - {name: pipeline-volume-name, value: '{{tasks.pipeline-volume.outputs.parameters.pipeline-volume-name}}'}
           - {name: read-pipeline-configuration-Data, value: '{{tasks.read-pipeline-configuration.outputs.parameters.read-pipeline-configuration-Data}}'}
-      - {name: pipeline-volume, template: pipeline-volume}
       - name: read-pipeline-configuration
         template: read-pipeline-configuration
-        dependencies: [pipeline-volume]
         arguments:
           parameters:
           - {name: config, value: '{{inputs.parameters.config}}'}
-          - {name: pipeline-volume-name, value: '{{tasks.pipeline-volume.outputs.parameters.pipeline-volume-name}}'}
   arguments:
     parameters:
     - {name: config}

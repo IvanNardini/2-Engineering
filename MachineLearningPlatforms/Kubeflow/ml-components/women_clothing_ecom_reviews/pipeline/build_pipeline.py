@@ -23,12 +23,13 @@ gcs_download_component = kfp.components.load_component_from_file(filename=GCS_CO
 
 
 @kfp.dsl.component
-def data_collection(config, mode):
+def data_collection(config, mode, bucket):
     return kfp.dsl.ContainerOp(
         name='Collect Data',
-        image=f'{REGISTRY}/data_collect:1.0.0',
+        image=f'{REGISTRY}/data_collect:1.0.1',
         arguments=['--config', config,
-                   '--mode', mode],
+                   '--mode', mode,
+                   '--bucket', bucket],
     ).apply(use_gcp_secret('user-gcp-sa'))
 
 

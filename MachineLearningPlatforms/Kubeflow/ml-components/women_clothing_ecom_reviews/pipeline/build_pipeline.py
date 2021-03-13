@@ -10,7 +10,6 @@ from kfp.gcp import use_gcp_secret
 
 import datetime
 from uri import URI
-from urllib.parse import quote
 import os
 import argparse
 
@@ -27,7 +26,7 @@ gcs_download_component = kfp.components.load_component_from_file(filename=GCS_CO
 def data_collection(config, mode, bucket):
     return kfp.dsl.ContainerOp(
         name='Collect Data',
-        image=f'{REGISTRY}/data_collect:1.0.2',
+        image=f'{REGISTRY}/data_collect:1.0.1',
         arguments=['--config', config,
                    '--mode', mode,
                    '--bucket', bucket],
@@ -55,9 +54,9 @@ def run_build_pipeline(args):
     if env == 'cloud':
         @dsl.pipeline(name="Women Clothing Reviews Classification ML Pipeline",
                       description="An example of Machine Learning Pipeline")
-        def build_pipeline(mode: dsl.PipelineParam, bucket, config):
-            config_uri = quote(f'{bucket}/{config}')
-            step_0 = gcs_download_component(config_uri)
+        def build_pipeline(mode: dsl.PipelineParam, bucket: URI, config_file: dsl.PipelineParam):
+            config_url = f'{bucket}/{config_file}'
+            step_0 = gcs_download_component(config_url)
             step_1 = data_collection(config=step_0.output, mode=mode, bucket=bucket)
             step_1.after(step_0)
             # step_2 = data_preparation(config=step_0.output, mode=mode)

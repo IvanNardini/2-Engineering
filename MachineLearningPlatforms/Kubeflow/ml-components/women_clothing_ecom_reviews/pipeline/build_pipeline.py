@@ -9,6 +9,7 @@ import kfp.dsl as dsl
 from kfp.gcp import use_gcp_secret
 
 import datetime
+import pathlib
 from uri import URI
 import os
 import argparse
@@ -47,15 +48,16 @@ def data_collection(config, mode, bucket):
 def run_build_pipeline(args):
     out_pipe_dir = args.out_pipe_dir
     env = args.mode
+
     pipe_name = f"women_clt_rev_clf_pipe_{env}_{datetime.datetime.now().strftime('%y%m%d-%H%M%S')}.yaml"
 
     # TODO: Check for one to one portability with cloud, add on prem in case
     if env == 'cloud':
         @dsl.pipeline(name="Women Clothing Reviews Classification ML Pipeline",
                       description="An example of Machine Learning Pipeline")
-        def build_pipeline(config: URI, mode: dsl.PipelineParam, bucket: URI):
-
-            step_0 = gcs_download_component(config)
+        def build_pipeline(mode: dsl.PipelineParam, bucket, config):
+            config_uri = pathlib.Path(f'{bucket}/{config}').as_uri()
+            step_0 = gcs_download_component(config_uri)
             step_1 = data_collection(config=step_0.output, mode=mode, bucket=bucket)
             step_1.after(step_0)
             # step_2 = data_preparation(config=step_0.output, mode=mode)

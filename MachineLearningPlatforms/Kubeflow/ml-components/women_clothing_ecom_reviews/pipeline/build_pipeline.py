@@ -9,8 +9,8 @@ import kfp.dsl as dsl
 from kfp.gcp import use_gcp_secret
 
 import datetime
-import pathlib
 from uri import URI
+from urllib.parse import quote
 import os
 import argparse
 
@@ -56,7 +56,7 @@ def run_build_pipeline(args):
         @dsl.pipeline(name="Women Clothing Reviews Classification ML Pipeline",
                       description="An example of Machine Learning Pipeline")
         def build_pipeline(mode: dsl.PipelineParam, bucket, config):
-            config_uri = pathlib.Path(f'{bucket}/{config}').as_uri()
+            config_uri = quote(f'{bucket}/{config}')
             step_0 = gcs_download_component(config_uri)
             step_1 = data_collection(config=step_0.output, mode=mode, bucket=bucket)
             step_1.after(step_0)

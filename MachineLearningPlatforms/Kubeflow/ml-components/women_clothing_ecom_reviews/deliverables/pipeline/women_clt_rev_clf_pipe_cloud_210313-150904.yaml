@@ -2,11 +2,11 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: women-clothing-reviews-classification-ml-pipeline-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0, pipelines.kubeflow.org/pipeline_compilation_time: '2021-03-13T14:47:51.390559',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0, pipelines.kubeflow.org/pipeline_compilation_time: '2021-03-13T15:09:04.348605',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "An example of Machine
-      Learning Pipeline", "inputs": [{"name": "config", "type": "URI"}, {"name": "mode",
-      "type": "PipelineParam"}, {"name": "bucket", "type": "URI"}], "name": "Women
-      Clothing Reviews Classification ML Pipeline"}'}
+      Learning Pipeline", "inputs": [{"name": "mode", "type": "PipelineParam"}, {"name":
+      "bucket"}, {"name": "config"}], "name": "Women Clothing Reviews Classification
+      ML Pipeline"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0}
 spec:
   entrypoint: women-clothing-reviews-classification-ml-pipeline
@@ -56,12 +56,9 @@ spec:
             mkdir -p "$output_path" # When source path is a directory, gsutil requires the destination to also be a directory
             gsutil -m rsync -r "$uri" "$output_path" # gsutil cp has different path handling than Linux cp. It always puts the source directory (name) inside the destination directory. gsutil rsync does not have that problem.
         fi
-      - '{{inputs.parameters.config}}'
+      - '%7B%7Bpipelineparam%3Aop%3D%3Bname%3Dbucket%7D%7D/%7B%7Bpipelineparam%3Aop%3D%3Bname%3Dconfig%7D%7D'
       - /tmp/outputs/Data/data
       image: google/cloud-sdk
-    inputs:
-      parameters:
-      - {name: config}
     outputs:
       parameters:
       - name: read-pipeline-configuration-Data
@@ -86,12 +83,11 @@ spec:
           "type": "URI"}], "name": "Read Pipeline configuration", "outputs": [{"name":
           "Data"}]}', pipelines.kubeflow.org/component_ref: '{"digest": "1fbe46e98817e5bc74b7c1e3ebe57b5dd57403d74b5123170aa270b95a0471ef",
           "url": "components/config_init/component.yaml"}', pipelines.kubeflow.org/arguments.parameters: '{"GCS
-          path": "{{inputs.parameters.config}}"}'}
+          path": "%7B%7Bpipelineparam%3Aop%3D%3Bname%3Dbucket%7D%7D/%7B%7Bpipelineparam%3Aop%3D%3Bname%3Dconfig%7D%7D"}'}
   - name: women-clothing-reviews-classification-ml-pipeline
     inputs:
       parameters:
       - {name: bucket}
-      - {name: config}
       - {name: mode}
     dag:
       tasks:
@@ -103,14 +99,10 @@ spec:
           - {name: bucket, value: '{{inputs.parameters.bucket}}'}
           - {name: mode, value: '{{inputs.parameters.mode}}'}
           - {name: read-pipeline-configuration-Data, value: '{{tasks.read-pipeline-configuration.outputs.parameters.read-pipeline-configuration-Data}}'}
-      - name: read-pipeline-configuration
-        template: read-pipeline-configuration
-        arguments:
-          parameters:
-          - {name: config, value: '{{inputs.parameters.config}}'}
+      - {name: read-pipeline-configuration, template: read-pipeline-configuration}
   arguments:
     parameters:
-    - {name: config}
     - {name: mode}
     - {name: bucket}
+    - {name: config}
   serviceAccountName: pipeline-runner

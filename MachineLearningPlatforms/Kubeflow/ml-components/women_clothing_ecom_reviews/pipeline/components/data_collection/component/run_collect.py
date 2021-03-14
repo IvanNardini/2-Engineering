@@ -30,19 +30,25 @@ def run_collect(args):
         else:
             stream = open(config, 'r')
             config = yaml.load(stream=stream, Loader=yaml.FullLoader)
-    except RuntimeError as error:
-        logging.info(error)
-        sys.exit(1)
-    else:
+
         collector = DataCollector(config=config)
         raw_df = collector.extract()
         # TODO: Add metadata in the pipeline
         print(raw_df.head(5))
         x_train, x_test, x_val, y_train, y_test, y_val = collector.transform(raw_df)
-        (train_path, test_path, val_path) = collector.load(x_train, x_test, x_val,
-                       y_train, y_test, y_val, mode=mode, bucket=bucket)
-        out_paths = namedtuple('output_paths', ['train', 'test', 'val'])
-        return out_paths(train_path, test_path, val_path)
+
+        if mode == 'cloud':
+            (train_path_gcs, test_path_gcs, val_path_gcs) = collector.load(x_train, x_test, x_val,
+                                                               y_train, y_test, y_val, mode=mode, bucket=bucket)
+            out_paths = namedtuple('output_paths', ['train', 'test', 'val'])
+            return out_paths(train_path_gcs, test_path_gcs, val_path_gcs)
+        else:
+            collector.load(x_train, x_test, x_val,
+                           y_train, y_test, y_val, mode=mode, bucket=bucket)
+    except RuntimeError as error:
+        logging.info(error)
+        sys.exit(1)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run data collector")
@@ -55,6 +61,7 @@ if __name__ == '__main__':
                         default=None,
                         help='if cloud, the bucket to stage output')
     parser.add_argument('--config',
+                        default='config.yaml',
                         help='path to configuration yaml file')
     args = parser.parse_args()
     run_collect(args)

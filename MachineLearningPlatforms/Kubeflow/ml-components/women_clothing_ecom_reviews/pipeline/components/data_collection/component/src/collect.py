@@ -41,76 +41,65 @@ class DataCollector():
 
     def extract(self):
         logging.info('Initiating Data Extraction Processing...')
-        try:
-            kaggle.api.authenticate()
-        except RuntimeError as error:
-            logging.info(f'Authentication issue: {error}')
-            sys.exit(1)
-        else:
-            logging.info('Fetching the data...')
-            kaggle.api.dataset_download_files(dataset=self.dataset,
+        kaggle.api.authenticate()
+        logging.info('Fetching the data...')
+        kaggle.api.dataset_download_files(dataset=self.dataset,
                                               path=self.raw_path,
                                               unzip=True)
-            logging.info(f'Loading the data under {self.raw_path}...')
-            raw_df = pd.read_csv(os.path.join(self.raw_path, self.raw_data))
+        logging.info(f'Loading the data under {self.raw_path}...')
+        raw_df = pd.read_csv(os.path.join(self.raw_path, self.raw_data))
         return raw_df
 
     def transform(self, raw_df):
         inter_data = raw_df.copy()
 
         logging.info('Initiating Data Processing...')
-        try:
-            logging.info('Reformat column names...')
-            columns_formatted = [col.lower().replace(" ", "_") for col in inter_data.columns]
-            inter_data.columns = columns_formatted
+        logging.info('Reformat column names...')
+        columns_formatted = [col.lower().replace(" ", "_") for col in inter_data.columns]
+        inter_data.columns = columns_formatted
 
-            logging.info('Select column for classification...')
-            inter_data = inter_data[self.variables + [self.target]]
-            logging.info('Handling with missing data...')
-            inter_data = inter_data[~inter_data[self.variables[1]].isnull()]
+        logging.info('Select column for classification...')
+        inter_data = inter_data[self.variables + [self.target]]
+        logging.info('Handling with missing data...')
+        inter_data = inter_data[~inter_data[self.variables[1]].isnull()]
 
-            logging.info('Oversampling...')
-            y = inter_data[self.target]
-            x = inter_data[inter_data.columns.difference([self.target])]
-            ros = RandomOverSampler(random_state=self.random_state)
-            x_over, y_over = ros.fit_resample(x, y)
+        logging.info('Oversampling...')
+        y = inter_data[self.target]
+        x = inter_data[inter_data.columns.difference([self.target])]
+        ros = RandomOverSampler(random_state=self.random_state)
+        x_over, y_over = ros.fit_resample(x, y)
 
-            logging.info('Train, Validation, Test splitting...')
-            x_train, x_test, y_train, y_test = train_test_split(x_over, y_over, test_size=self.test_size,
-                                                                random_state=self.random_state)
-            x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=self.val_size,
-                                                              random_state=self.random_state)
-        except RuntimeError as error:
-            logging.info(error)
-            sys.exit(1)
-        else:
-            logging.info('Data processing successfully completed!')
-
+        logging.info('Train, Validation, Test splitting...')
+        x_train, x_test, y_train, y_test = train_test_split(x_over, y_over, test_size=self.test_size,
+                                                            random_state=self.random_state)
+        x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=self.val_size,
+                                                          random_state=self.random_state)
+        logging.info('Data processing successfully completed!')
         return x_train, x_test, x_val, y_train, y_test, y_val
 
     def load(self, x_train, x_test, x_val, y_train, y_test, y_val,
              mode, bucket):
+
         logging.info('Initiating Data Loading...')
-        try:
-            os.mkdir(path=self.interim_path)
-            x_dfs = [x_train, x_test, x_val]
-            y_dfs = [y_train, y_test, y_val]
+        x_dfs = [x_train, x_test, x_val]
+        y_dfs = [y_train, y_test, y_val]
+        dfs = [pd.merge(x_df, y_df, how="left", left_index=True, right_index=True) for x_df, y_df in zip(x_dfs, y_dfs)]
+
+        if mode == 'cloud':
             out_paths = []
-            for x_df, y_df, df_name in zip(x_dfs, y_dfs, self.df_names):
-                df = pd.merge(x_df, y_df, how="left", left_index=True, right_index=True)
-                if mode == 'cloud':
-                    out_csv_path = f'{bucket}/{self.interim_path}/{df_name}'
-                    logging.info(f'Loading data to {out_csv_path}...')
-                    with gfile.GFile(name=out_csv_path, mode='w') as file:
-                        df.to_csv(file, index=False)
-                else:
-                    out_csv_path = os.path.join(self.interim_path, df_name)
-                    logging.info(f'Loading data to {out_csv_path}...')
-                    df.to_csv(out_csv_path, index=False)
-                out_paths.append(out_csv_path)
-        except RuntimeError as error:
-            logging.info(error)
-            sys.exit(1)
+            for df_name, df in zip(self.df_names, dfs):
+                out_csv_gcs = f'{bucket}/{self.interim_path}/{df_name}'
+                logging.info(f'Loading data to {out_csv_gcs}...')
+                with gfile.GFile(name=out_csv_gcs, mode='w') as file:
+                    df.to_csv(file, index=False)
+                logging.info(f'Data successfully loaded under {out_csv_gcs}')
+            out_paths.append(out_csv_gcs)
+            return tuple(out_paths)
+
         else:
-            logging.info(f'Data successfully loaded!')
-        return tuple(out_paths)
+            os.mkdir(path=self.interim_path)
+            for df_name, df in zip(self.df_names, dfs):
+                out_csv_path = os.path.join(self.interim_path, df_name)
+                logging.info(f'Loading data to {out_csv_path}...')
+                df.to_csv(out_csv_path, index=False)
+                logging.info(f'{out_csv_path} successfully loaded')

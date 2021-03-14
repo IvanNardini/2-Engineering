@@ -27,9 +27,11 @@ def data_collection(config, mode, bucket):
     return kfp.dsl.ContainerOp(
         name='Collect Data',
         image=f'{REGISTRY}/data_collect:1.0.2',
-        arguments=['--config', config,
-                   '--mode', mode,
-                   '--bucket', bucket],
+        arguments=[
+            '--mode', mode,
+            '--bucket', bucket,
+            '--config', config
+        ],
     ).apply(use_gcp_secret('user-gcp-sa'))
 
 

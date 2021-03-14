@@ -95,20 +95,22 @@ class DataCollector():
             os.mkdir(path=self.interim_path)
             x_dfs = [x_train, x_test, x_val]
             y_dfs = [y_train, y_test, y_val]
+            out_paths = []
             for x_df, y_df, df_name in zip(x_dfs, y_dfs, self.df_names):
                 df = pd.merge(x_df, y_df, how="left", left_index=True, right_index=True)
                 if mode == 'cloud':
-                    out_csv_gcs = f'{bucket}/{self.interim_path}/{df_name}'
-                    logging.info(f'Loading data to {out_csv_gcs}...')
-                    with gfile.GFile(name=out_csv_gcs, mode='w') as file:
+                    out_csv_path = f'{bucket}/{self.interim_path}/{df_name}'
+                    logging.info(f'Loading data to {out_csv_path}...')
+                    with gfile.GFile(name=out_csv_path, mode='w') as file:
                         df.to_csv(file, index=False)
                 else:
                     out_csv_path = os.path.join(self.interim_path, df_name)
                     logging.info(f'Loading data to {out_csv_path}...')
                     df.to_csv(out_csv_path, index=False)
+                out_paths.append(out_csv_path)
         except RuntimeError as error:
             logging.info(error)
             sys.exit(1)
         else:
             logging.info(f'Data successfully loaded!')
-        return 0
+        return tuple(out_paths)

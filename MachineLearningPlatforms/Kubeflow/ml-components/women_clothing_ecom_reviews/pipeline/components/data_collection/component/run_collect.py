@@ -10,6 +10,7 @@ import logging.config
 import yaml
 import sys
 from src.collect import DataCollector
+from collections import namedtuple
 
 # Settings -------------------------------------------------------------------------------------------------------------
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
@@ -38,9 +39,10 @@ def run_collect(args):
         # TODO: Add metadata in the pipeline
         print(raw_df.head(5))
         x_train, x_test, x_val, y_train, y_test, y_val = collector.transform(raw_df)
-        collector.load(x_train, x_test, x_val,
+        out_paths_tuple = collector.load(x_train, x_test, x_val,
                        y_train, y_test, y_val, mode=mode, bucket=bucket)
-
+        out_paths = namedtuple('output_paths', ['train', 'test', 'val'])
+        return out_paths(out_paths_tuple)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run data collector")

@@ -17,6 +17,8 @@ from nltk.corpus import stopwords
 nltk.download('stopwords')
 from nltk.stem import PorterStemmer
 
+from tensorflow.io import gfile
+
 
 # Helpers ------------------------------------------------------------------------------------------------------------
 
@@ -29,12 +31,14 @@ def stemmer(words_list):
     ps = PorterStemmer()
     return [ps.stem(word) for word in words_list]
 
-
-def load_data(path, filename):
-    data_path = os.path.join(path, filename)
-    logging.info(f'Loading {data_path} file...')
+def load_data(mode, input_data):
+    logging.info(f'Loading data to {input_data}...')
     try:
-        df = pd.read_csv(data_path)
+        if mode == 'cloud':
+            with gfile.GFile(name=input_data, mode='r') as file:
+                df = pd.read_csv(file)
+        else:
+            df = pd.read_csv(input_data)
     except RuntimeError as error:
         logging.info(error)
         sys.exit(1)
@@ -43,7 +47,7 @@ def load_data(path, filename):
     return df
 
 
-def save_data(df, path, filename):
+def save_data(df, mode, path, filename):
     data_path = os.path.join(path, filename)
     logging.info(f'Writing {data_path} file...')
     try:

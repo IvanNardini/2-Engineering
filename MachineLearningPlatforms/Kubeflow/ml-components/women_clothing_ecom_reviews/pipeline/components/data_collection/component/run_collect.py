@@ -8,9 +8,9 @@
 import argparse
 import logging.config
 import yaml
-import sys
-from src.collect import DataCollector
 from collections import namedtuple
+import sys
+from .src.collect import DataCollector
 
 # Settings -------------------------------------------------------------------------------------------------------------
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',

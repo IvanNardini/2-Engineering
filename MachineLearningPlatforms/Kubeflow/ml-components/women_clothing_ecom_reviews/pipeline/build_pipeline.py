@@ -10,6 +10,7 @@ from kfp.gcp import use_gcp_secret
 
 import datetime
 from uri import URI
+from typing import NamedTuple
 import os
 import argparse
 
@@ -23,7 +24,7 @@ gcs_download_component = kfp.components.load_component_from_file(filename=GCS_CO
 
 
 @kfp.dsl.component
-def data_collection(config, mode, bucket):
+def data_collection(mode,bucket,config):
     return kfp.dsl.ContainerOp(
         name='Collect Data',
         image=f'{REGISTRY}/data_collect:1.0.3',
@@ -36,7 +37,7 @@ def data_collection(config, mode, bucket):
 
 
 @kfp.dsl.component
-def data_preparation(config, mode, bucket,
+def data_preparation(mode, bucket, config,
                      train_path, test_path, val_path):
     return kfp.dsl.ContainerOp(
         name='Prepare Data',
@@ -66,9 +67,9 @@ def run_build_pipeline(args):
         def build_pipeline(mode: dsl.PipelineParam, bucket: URI, config_file: dsl.PipelineParam):
             config_url = f'{bucket}/{config_file}'
             step_0 = gcs_download_component(config_url)
-            step_1 = data_collection(config=step_0.output, mode=mode, bucket=bucket)
+            step_1 = data_collection(mode=mode, bucket=bucket, config=step_0.output)
             step_1.after(step_0)
-            step_2 = data_preparation(config=step_0.output, mode=mode, bucket=bucket,
+            step_2 = data_preparation(mode=mode, bucket=bucket, config=step_0.output,
                                       train_path=step_1.outputs['train'],
                                       test_path=step_1.outputs['test'],
                                       val_path=step_1.outputs['val'])
@@ -84,7 +85,6 @@ if __name__ == '__main__':
     parser.add_argument('--out-pipe-dir',
                         default='../deliverables/pipeline')
     parser.add_argument('--mode',
-                        required=False,
                         default='cloud')
     args = parser.parse_args()
     run_build_pipeline(args=args)

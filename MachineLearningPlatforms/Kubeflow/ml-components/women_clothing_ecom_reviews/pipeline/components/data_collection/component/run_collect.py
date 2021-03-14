@@ -39,15 +39,13 @@ def run_collect(args):
         # TODO: Add metadata in the pipeline
         print(raw_df.head(5))
         x_train, x_test, x_val, y_train, y_test, y_val = collector.transform(raw_df)
-        out_paths_tuple = collector.load(x_train, x_test, x_val,
+        (train_path, test_path, val_path) = collector.load(x_train, x_test, x_val,
                        y_train, y_test, y_val, mode=mode, bucket=bucket)
         out_paths = namedtuple('output_paths', ['train', 'test', 'val'])
-        return out_paths(out_paths_tuple)
+        return out_paths(train_path, test_path, val_path)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run data collector")
-    parser.add_argument('--config',
-                        help='path to configuration yaml file')
     parser.add_argument('--mode',
                         required=False,
                         default='local',
@@ -56,5 +54,7 @@ if __name__ == '__main__':
                         required=False,
                         default=None,
                         help='if cloud, the bucket to stage output')
+    parser.add_argument('--config',
+                        help='path to configuration yaml file')
     args = parser.parse_args()
     run_collect(args)

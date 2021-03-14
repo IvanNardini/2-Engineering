@@ -68,13 +68,13 @@ if __name__ == '__main__':
     parser.add_argument('--config',
                         default='config.yaml',
                         help='path to configuration yaml file')
-    parser.add_argument('--train_path',
+    parser.add_argument('--train-path',
                         required=False,
                         help='if cloud, the path to train data')
-    parser.add_argument('--test_path',
+    parser.add_argument('--test-path',
                         required=False,
                         help='if cloud, the path to test data')
-    parser.add_argument('--val_path',
+    parser.add_argument('--val-path',
                         required=False,
                         help='if cloud, the path to val data')
 

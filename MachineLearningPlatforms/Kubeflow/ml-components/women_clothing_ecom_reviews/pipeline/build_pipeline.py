@@ -35,14 +35,21 @@ def data_collection(config, mode, bucket):
     ).apply(use_gcp_secret('user-gcp-sa'))
 
 
-# @kfp.dsl.component
-# def data_preparation(config, mode):
-#     return kfp.dsl.ContainerOp(
-#         name='Prepare Data',
-#         image=f'{REGISTRY}/data_prepare:1.0.0',
-#         arguments=['--config', config,
-#                    '--mode', mode],
-#     ).apply(use_gcp_secret('user-gcp-sa'))
+@kfp.dsl.component
+def data_preparation(config, mode, bucket,
+                     train_path, test_path, val_path):
+    return kfp.dsl.ContainerOp(
+        name='Prepare Data',
+        image=f'{REGISTRY}/data_prepare:1.0.0',
+        arguments=[
+            '--mode', mode,
+            '--bucket', bucket,
+            '--config', config,
+            '--train-path', train_path,
+            '--test-path', test_path,
+            '--val-path', val_path
+        ],
+    ).apply(use_gcp_secret('user-gcp-sa'))
 
 
 # run_build_pipeline ---------------------------------------------------------------------------------------------------
@@ -61,9 +68,11 @@ def run_build_pipeline(args):
             step_0 = gcs_download_component(config_url)
             step_1 = data_collection(config=step_0.output, mode=mode, bucket=bucket)
             step_1.after(step_0)
-            # step_2 = data_preparation(config=step_0.output, mode=mode)
-            # step_2.add_pvolumes({'/pipe-data': out_vol_op.volume})
-            # step_2.after(step_1)
+            step_2 = data_preparation(config=step_0.output, mode=mode, bucket=bucket,
+                                      train_path=step_1.outputs['train'],
+                                      test_path=step_1.outputs['test'],
+                                      val_path=step_1.outputs['val'])
+            step_2.after(step_1)
 
     pipeline_compiler = cmp.Compiler()
     pipeline_compiler.compile(pipeline_func=build_pipeline,

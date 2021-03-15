@@ -5,6 +5,7 @@
 __init__.py
 
 MachineLearningPlatforms/Kubeflow/base/env
+MachineLearningPlatforms/Kubeflow/venv
 MachineLearningPlatforms/Kubeflow/base/pipelines/hellokubeflow.egg-info
 MachineLearningPlatforms/Kubeflow/base/__init__.py
 MachineLearningPlatforms/Kubeflow/base/tests

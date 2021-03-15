@@ -86,20 +86,23 @@ class DataCollector():
         dfs = [pd.merge(x_df, y_df, how="left", left_index=True, right_index=True) for x_df, y_df in zip(x_dfs, y_dfs)]
 
         if mode == 'cloud':
-            out_paths = []
+            out_gcs = []
             for df_name, df in zip(self.df_names, dfs):
                 out_csv_gcs = f'{bucket}/{self.interim_path}/{df_name}'
                 logging.info(f'Loading data to {out_csv_gcs}...')
                 with gfile.GFile(name=out_csv_gcs, mode='w') as file:
                     df.to_csv(file, index=False)
+                out_gcs.append(out_csv_gcs)
                 logging.info(f'Data successfully loaded under {out_csv_gcs}')
-            out_paths.append(out_csv_gcs)
-            return tuple(out_paths)
+            return tuple(out_gcs)
 
         else:
+            out_path = []
             os.mkdir(path=self.interim_path)
             for df_name, df in zip(self.df_names, dfs):
                 out_csv_path = os.path.join(self.interim_path, df_name)
                 logging.info(f'Loading data to {out_csv_path}...')
                 df.to_csv(out_csv_path, index=False)
                 logging.info(f'{out_csv_path} successfully loaded')
+                out_path.append(out_csv_path)
+            return tuple(out_path)

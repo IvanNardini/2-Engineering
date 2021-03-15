@@ -9,19 +9,19 @@ import argparse
 import logging.config
 import yaml
 from collections import namedtuple
+from typing import NamedTuple
 import sys
-from .src.collect import DataCollector
+from src.collect import DataCollector
 
 # Settings -------------------------------------------------------------------------------------------------------------
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
 
-# Main -----------------------------------------------------------------------------------------------------------------
-def run_collect(args):
-    mode = args.mode
-    bucket = args.bucket
-    config = args.config
 
+# Main -----------------------------------------------------------------------------------------------------------------
+def run_collect(mode: str,
+                bucket: str,
+                config: str) -> NamedTuple('output_paths', [('train', str), ('test', str), ('val', str)]):
     logging.info('Initializing pipeline configuration...')
     try:
         # TODO: Check for one to one portability with cloud
@@ -39,12 +39,15 @@ def run_collect(args):
 
         if mode == 'cloud':
             (train_path_gcs, test_path_gcs, val_path_gcs) = collector.load(x_train, x_test, x_val,
-                                                               y_train, y_test, y_val, mode=mode, bucket=bucket)
-            out_paths = namedtuple('output_paths', ['train', 'test', 'val'])
-            return out_paths(train_path_gcs, test_path_gcs, val_path_gcs)
+                                                                           y_train, y_test, y_val, mode=mode,
+                                                                           bucket=bucket)
+            out_gcs = namedtuple('output_paths', ['train', 'test', 'val'])
+            return out_gcs(train_path_gcs, test_path_gcs, val_path_gcs)
         else:
-            collector.load(x_train, x_test, x_val,
-                           y_train, y_test, y_val, mode=mode, bucket=bucket)
+            (train_path, test_path, val_path) = collector.load(x_train, x_test, x_val,
+                                                               y_train, y_test, y_val, mode=mode, bucket=bucket)
+            out_path = namedtuple('output_paths', ['train', 'test', 'val'])
+            return out_path(train_path, test_path, val_path)
     except RuntimeError as error:
         logging.info(error)
         sys.exit(1)
@@ -64,4 +67,7 @@ if __name__ == '__main__':
                         default='config.yaml',
                         help='path to configuration yaml file')
     args = parser.parse_args()
-    run_collect(args)
+    MODE = args.mode
+    BUCKET = args.bucket
+    CONFIG = args.config
+    run_collect(mode=MODE, bucket=BUCKET, config=CONFIG)

@@ -4,25 +4,27 @@
 # Description
 #
 
-# Libraries ------------------------------------------------------------------------------------------------------------
 import argparse
-import logging.config
-import yaml
-from collections import namedtuple
 from typing import NamedTuple
-import sys
-from src.collect import DataCollector
-
-# Settings -------------------------------------------------------------------------------------------------------------
-logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
-
 
 # Main -----------------------------------------------------------------------------------------------------------------
 def run_collect(mode: str,
                 bucket: str,
                 config: str) -> NamedTuple('output_paths', [('train', str), ('test', str), ('val', str)]):
+
+    # Libraries --------------------------------------------------------------------------------------------------------
+    import logging
+    import yaml
+    from collections import namedtuple
+    import sys
+    from src.collect import DataCollector
+
+    # Settings ---------------------------------------------------------------------------------------------------------
+    logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
+                        datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
+
     logging.info('Initializing pipeline configuration...')
+
     try:
         # TODO: Check for one to one portability with cloud
         if mode == 'cloud':

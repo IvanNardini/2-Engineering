@@ -2,7 +2,6 @@
 
 import kfp.components as cpt
 from component.run_collect import run_collect
-import datetime
 import argparse
 
 REGISTRY = "docker.io/in92"

@@ -7,4 +7,4 @@ COPY kaggle.json /root/.kaggle/
 RUN chmod 600 /root/.kaggle/kaggle.json
 COPY component .
 EXPOSE 9090
-ENTRYPOINT [ "python3", "./run_collect.py" ]
+ENTRYPOINT [ "python3", "run_collect.py" ]

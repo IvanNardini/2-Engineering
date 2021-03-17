@@ -4,6 +4,7 @@
 # build_pipeline is a module to compile the pipeline
 
 import kfp
+import kfp.components as cmpt
 import kfp.compiler as cmp
 import kfp.dsl as dsl
 from kfp.gcp import use_gcp_secret
@@ -16,13 +17,12 @@ import argparse
 
 # Variables ------------------------------------------------------------------------------------------------------------
 GCS_COMPONENT_PATH = 'components/config_init/component.yaml'
-DATA_COLLECT_COMP_PATH = 'components/data_collection/component/women_clt_rev_clf_cloud_data_collection_component.yaml'
+DATA_COLLECT_COMP_PATH = 'components/data_collection/women_clt_rev_clf_cloud_data_collection_component.yaml'
 REGISTRY = "docker.io/in92"
 
 # Components -----------------------------------------------------------------------------------------------------------
-
-gcs_download_component = kfp.components.load_component_from_file(filename=GCS_COMPONENT_PATH)
-data_collection_component = kfp.components.load_component_from_file(filename=DATA_COLLECT_COMP_PATH)
+gcs_download_component = cmpt.load_component_from_file(filename=GCS_COMPONENT_PATH)
+data_collection_component = cmpt.load_component_from_file(filename=DATA_COLLECT_COMP_PATH)
 
 
 # @kfp.dsl.component

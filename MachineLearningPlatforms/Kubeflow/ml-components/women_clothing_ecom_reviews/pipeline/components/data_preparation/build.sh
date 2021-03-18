@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DOCKER_IMAGE=${1:-data_prepare:1.0.0}
+DOCKER_IMAGE=${1:-data_prepare:latest}
 DOCKER_HOST=${2:-docker.io}
 DOCKER_REPO=${3:-in92}
 MODE=${4}

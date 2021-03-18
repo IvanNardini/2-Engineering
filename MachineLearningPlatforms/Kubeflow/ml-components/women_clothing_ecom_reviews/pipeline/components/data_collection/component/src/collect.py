@@ -9,7 +9,6 @@
 ## General
 import os
 import logging
-import sys
 
 ## Extract
 import kaggle
@@ -103,6 +102,6 @@ class DataCollector():
                 out_csv_path = os.path.join(self.interim_path, df_name)
                 logging.info(f'Loading data to {out_csv_path}...')
                 df.to_csv(out_csv_path, index=False)
-                logging.info(f'{out_csv_path} successfully loaded')
+                logging.info(f'{out_csv_path} successfully loaded!')
                 out_path.append(out_csv_path)
             return tuple(out_path)

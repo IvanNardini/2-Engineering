@@ -4,70 +4,76 @@
 # Description
 #
 
-# Libraries ------------------------------------------------------------------------------------------------------------
 import argparse
-import logging.config
-import yaml
-import sys
-import os
-from src.prepare import DataPreparer
-from src.helpers import load_data, save_data
-
-# Settings -------------------------------------------------------------------------------------------------------------
-logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
+from typing import NamedTuple
+from kfp.dsl.types import GCSPath
 
 # Main -----------------------------------------------------------------------------------------------------------------
-def run_collect(args):
-    mode = args.mode
-    config = args.config
-    train_path = args.train_path
-    test_path = args.test_path
-    val_path = args.val_path
+def run_prepare(config: str,
+                mode: str,
+                bucket: str,
+                train_path: 'GCSPath',
+                test_path: 'GCSPath',
+                val_path: 'GCSPath') -> NamedTuple('output_paths', [('train', 'GCSPath'), ('test', 'GCSPath'), ('val', 'GCSPath')]):
+    # Libraries --------------------------------------------------------------------------------------------------------
+    import logging.config
+    import yaml
+    import sys
+    import os
+    from src.prepare import DataPreparer
+    from src.helpers import load_data, save_data
 
-    #TODO: Add input path param 
+    # Settings ---------------------------------------------------------------------------------------------------------
+    logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
+                        datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
+
     try:
-        # TODO: Check for one to one portability with cloud
-        if mode == 'cloud':
-            config = yaml.safe_load(config)
-        else:
-            stream = open(config, 'r')
-            config = yaml.load(stream=stream, Loader=yaml.FullLoader)
-
+        stream = open(config, 'r')
+        config = yaml.load(stream=stream, Loader=yaml.FullLoader)
         preparer = DataPreparer(config=config)
+        input_paths = [train_path, test_path, val_path]
 
         if mode == 'cloud':
-            input_paths_gcs = [train_path, test_path, val_path]
             output_paths_gcs = []
-            for input_path, filename in zip(input_paths_gcs, config['processed_data']):
-                data = load_data(mode, input_path)
-                processed_data = preparer.transform(data)
+            for input_path, filename in zip(input_paths, config['processed_data']):
+                data = load_data(input_data=input_path, mode=mode)
+                processed_data = preparer.transform(data=data)
                 # TODO: Add metadata in the pipeline
                 print(processed_data.head(5))
-                out_path = save_data(processed_data, mode, config['processed_path'], filename)
-            output_paths_gcs.append(out_path)
+                out_path_gcs = save_data(df=processed_data, path=config['processed_path'],
+                                         out_data=filename, mode=mode, bucket=bucket)
+                output_paths_gcs.append(out_path_gcs)
             return tuple(output_paths_gcs)
 
         else:
+            output_paths = []
             for input_filename, out_filename in zip(config['interim_data'], config['processed_data']):
                 data_path = os.path.join(config['interim_path'], input_filename)
-                data = load_data(mode, data_path)
-                processed_data = preparer.transform(data)
+                data = load_data(input_data=data_path, mode=mode)
+                processed_data = preparer.transform(data=data)
+                # TODO: Add metadata in the pipeline
                 print(processed_data.head(5))
-                save_data(processed_data, mode, config['processed_path'], out_filename)
+                out_path = save_data(df=processed_data, path=config['processed_path'],
+                                     out_data=out_filename, mode=mode, bucket=bucket)
+                output_paths.append(out_path)
+            return tuple(output_paths)
+
     except RuntimeError as error:
         logging.info(error)
         sys.exit(1)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run data collector")
-    parser.add_argument('--mode',
-                        required=False,
-                        default='local',
-                        help='where you run the pipeline')
     parser.add_argument('--config',
                         default='config.yaml',
                         help='path to configuration yaml file')
+    parser.add_argument('--mode',
+                        required=False,
+                        help='where you run the pipeline')
+    parser.add_argument('--bucket',
+                        required=False,
+                        help='if cloud, the staging bucket')
     parser.add_argument('--train-path',
                         required=False,
                         help='if cloud, the path to train data')
@@ -79,4 +85,15 @@ if __name__ == '__main__':
                         help='if cloud, the path to val data')
 
     args = parser.parse_args()
-    run_collect(args)
+    CONFIG = args.config
+    MODE = args.mode
+    BUCKET = args.bucket
+    TRAIN_PATH = args.train_path
+    TEST_PATH = args.test_path
+    VAL_PATH = args.val_path
+    run_prepare(config=CONFIG,
+                mode=MODE,
+                bucket=BUCKET,
+                train_path=TRAIN_PATH,
+                test_path=TEST_PATH,
+                val_path=VAL_PATH)

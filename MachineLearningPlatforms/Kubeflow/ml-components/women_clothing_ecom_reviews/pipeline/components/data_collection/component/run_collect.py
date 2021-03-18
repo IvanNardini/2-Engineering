@@ -6,11 +6,12 @@
 
 import argparse
 from typing import NamedTuple
+from kfp.dsl.types import GCSPath
 
 # Main -----------------------------------------------------------------------------------------------------------------
-def run_collect(mode: str,
-                bucket: str,
-                config: str) -> NamedTuple('output_paths', [('train', str), ('test', str), ('val', str)]):
+def run_collect(config: str,
+                mode: str,
+                bucket: str) -> NamedTuple('output_paths', [('train', 'GCSPath'), ('test', 'GCSPath'), ('val', 'GCSPath')]):
 
     # Libraries --------------------------------------------------------------------------------------------------------
     import logging
@@ -26,13 +27,8 @@ def run_collect(mode: str,
     logging.info('Initializing pipeline configuration...')
 
     try:
-        # TODO: Check for one to one portability with cloud
-        if mode == 'cloud':
-            config = yaml.safe_load(config)
-        else:
-            stream = open(config, 'r')
-            config = yaml.load(stream=stream, Loader=yaml.FullLoader)
-
+        stream = open(config, 'r')
+        config = yaml.load(stream=stream, Loader=yaml.FullLoader)
         collector = DataCollector(config=config)
         raw_df = collector.extract()
         # TODO: Add metadata in the pipeline
@@ -57,19 +53,18 @@ def run_collect(mode: str,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run data collector")
-    parser.add_argument('--mode',
-                        required=False,
-                        default='local',
-                        help='where you run the pipeline')
-    parser.add_argument('--bucket',
-                        required=False,
-                        default=None,
-                        help='if cloud, the bucket to stage output')
     parser.add_argument('--config',
                         default='config.yaml',
                         help='path to configuration yaml file')
+    parser.add_argument('--mode',
+                        required=False,
+                        help='where you run the pipeline')
+    parser.add_argument('--bucket',
+                        required=False,
+                        help='if cloud, the bucket to stage output')
+
     args = parser.parse_args()
+    CONFIG = args.config
     MODE = args.mode
     BUCKET = args.bucket
-    CONFIG = args.config
-    run_collect(mode=MODE, bucket=BUCKET, config=CONFIG)
+    run_collect(config=CONFIG, mode=MODE, bucket=BUCKET)

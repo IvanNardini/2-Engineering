@@ -6,13 +6,14 @@
 
 import argparse
 from typing import NamedTuple
-from kfp.dsl.types import GCSPath
 
 # Main -----------------------------------------------------------------------------------------------------------------
 def run_collect(config: str,
                 mode: str,
-                bucket: str) -> NamedTuple('output_paths', [('train', 'GCSPath'), ('test', 'GCSPath'), ('val', 'GCSPath')]):
-
+                bucket: str) -> NamedTuple('output_paths',
+                                           [('train', 'GCSPath'),
+                                            ('test', 'GCSPath'),
+                                            ('val', 'GCSPath')]):
     # Libraries --------------------------------------------------------------------------------------------------------
     import logging
     import yaml
@@ -23,14 +24,12 @@ def run_collect(config: str,
     # Settings ---------------------------------------------------------------------------------------------------------
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
-
-    logging.info('Initializing pipeline configuration...')
-
     try:
+        logging.info('Initializing configuration...')
         stream = open(config, 'r')
         config = yaml.load(stream=stream, Loader=yaml.FullLoader)
         collector = DataCollector(config=config)
-        raw_df = collector.extract()
+        raw_df = collector.extract(mode=mode, bucket=bucket)
         # TODO: Add metadata in the pipeline
         print(raw_df.head(5))
         x_train, x_test, x_val, y_train, y_test, y_val = collector.transform(raw_df)

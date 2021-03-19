@@ -16,11 +16,13 @@ import argparse
 # Variables ------------------------------------------------------------------------------------------------------------
 DATA_COLLECT = '../deliverables/components/data_collection/component.yaml'
 DATA_PREPARE = '../deliverables/components/data_preparation/component.yaml'
+DATA_VALIDATE = '../deliverables/components/data_validation/component.yaml'
 REGISTRY = "docker.io/in92"
 
 # Components -----------------------------------------------------------------------------------------------------------
 data_collection_component = cmpt.load_component_from_file(filename=DATA_COLLECT)
 data_preparation_component = cmpt.load_component_from_file(filename=DATA_PREPARE)
+data_validation_component = cmpt.load_component_from_file(filename=DATA_VALIDATE)
 
 
 # run_build_pipeline ---------------------------------------------------------------------------------------------------
@@ -38,14 +40,17 @@ def run_build_pipeline(args):
             step_1 = data_collection_component(config=config_file,
                                                mode=mode,
                                                bucket=bucket).apply(use_gcp_secret('user-gcp-sa'))
+            step_2 = data_validation_component(config=config_file,
+                                               mode=mode,
+                                               bucket=bucket).apply(use_gcp_secret('user-gcp-sa'))
 
-            step_2 = data_preparation_component(config=config_file,
+            step_3 = data_preparation_component(config=config_file,
                                                 mode=mode,
                                                 bucket=bucket,
                                                 train_path=step_1.outputs['train'],
                                                 test_path=step_1.outputs['test'],
                                                 val_path=step_1.outputs['val']).apply(use_gcp_secret('user-gcp-sa'))
-            step_2.after(step_1)
+            step_3.after(step_1)
 
     pipeline_compiler = cmp.Compiler()
     pipeline_compiler.compile(pipeline_func=build_pipeline,

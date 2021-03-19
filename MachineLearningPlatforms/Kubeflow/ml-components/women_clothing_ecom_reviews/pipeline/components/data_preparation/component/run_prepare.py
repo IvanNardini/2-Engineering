@@ -26,8 +26,8 @@ def run_prepare(config: str,
     # Settings ---------------------------------------------------------------------------------------------------------
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
-
     try:
+        logging.info('Initializing configuration...')
         stream = open(config, 'r')
         config = yaml.load(stream=stream, Loader=yaml.FullLoader)
         preparer = DataPreparer(config=config)

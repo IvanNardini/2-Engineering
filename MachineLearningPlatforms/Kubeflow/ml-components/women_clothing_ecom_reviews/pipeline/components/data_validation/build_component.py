@@ -3,7 +3,7 @@
 from pathlib import Path
 import os
 import kfp.components as cpt
-from component.run_collect import run_collect
+from component.run_validate import run_validate
 import argparse
 
 REGISTRY = "docker.io/in92"
@@ -14,8 +14,8 @@ def run_build_component(args):
     p = Path(out_components_dir)
     if not p.exists():
         os.mkdir(out_components_dir)
-    component = cpt.func_to_container_op(run_collect,
-                                         base_image=f'{REGISTRY}/data_collect:1.0.1',
+    component = cpt.func_to_container_op(run_validate,
+                                         base_image=f'{REGISTRY}/data_validate:latest',
                                          output_component_file=f'{out_components_dir}/{COMP_NAME}')
 
 if __name__ == "__main__":
@@ -23,6 +23,6 @@ if __name__ == "__main__":
     parser.add_argument('--mode',
                         default='cloud')
     parser.add_argument('--output-component-dir',
-                        default='../../../deliverables/components/data_collection')
+                        default='../../../deliverables/components/data_validation')
     args = parser.parse_args()
     run_build_component(args=args)

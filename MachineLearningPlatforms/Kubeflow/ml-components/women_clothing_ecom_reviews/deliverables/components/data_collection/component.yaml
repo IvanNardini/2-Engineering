@@ -1,4 +1,4 @@
-name: Collect data
+name: Collect Data
 inputs:
 - {name: config, type: String}
 - {name: mode, type: String}
@@ -9,7 +9,7 @@ outputs:
 - {name: val, type: GCSPath}
 implementation:
   container:
-    image: docker.io/in92/data_collect:latest
+    image: docker.io/in92/data_collect:1.0.1
     command:
     - sh
     - -ec
@@ -21,7 +21,6 @@ implementation:
       def run_collect(config,
                       mode,
                       bucket):
-
           # Libraries --------------------------------------------------------------------------------------------------------
           import logging
           import yaml
@@ -39,7 +38,7 @@ implementation:
               stream = open(config, 'r')
               config = yaml.load(stream=stream, Loader=yaml.FullLoader)
               collector = DataCollector(config=config)
-              raw_df = collector.extract()
+              raw_df = collector.extract(mode=mode, bucket=bucket)
               # TODO: Add metadata in the pipeline
               print(raw_df.head(5))
               x_train, x_test, x_val, y_train, y_test, y_val = collector.transform(raw_df)

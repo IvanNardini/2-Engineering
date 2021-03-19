@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: women-clothing-reviews-classification-ml-pipeline-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0, pipelines.kubeflow.org/pipeline_compilation_time: '2021-03-18T07:16:50.544589',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0, pipelines.kubeflow.org/pipeline_compilation_time: '2021-03-19T08:05:02.225581',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "An example of Machine
       Learning Pipeline", "inputs": [{"default": "config.yaml", "name": "config_file",
       "optional": true}, {"name": "mode", "optional": true}, {"name": "bucket", "optional":
@@ -27,7 +27,6 @@ spec:
         def run_collect(config,
                         mode,
                         bucket):
-
             # Libraries --------------------------------------------------------------------------------------------------------
             import logging
             import yaml
@@ -45,7 +44,7 @@ spec:
                 stream = open(config, 'r')
                 config = yaml.load(stream=stream, Loader=yaml.FullLoader)
                 collector = DataCollector(config=config)
-                raw_df = collector.extract()
+                raw_df = collector.extract(mode=mode, bucket=bucket)
                 # TODO: Add metadata in the pipeline
                 print(raw_df.head(5))
                 x_train, x_test, x_val, y_train, y_test, y_val = collector.transform(raw_df)
@@ -94,7 +93,7 @@ spec:
       env:
       - {name: GOOGLE_APPLICATION_CREDENTIALS, value: /secret/gcp-credentials/user-gcp-sa.json}
       - {name: CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE, value: /secret/gcp-credentials/user-gcp-sa.json}
-      image: docker.io/in92/data_collect:latest
+      image: docker.io/in92/data_collect:1.0.1
       volumeMounts:
       - {mountPath: /secret/gcp-credentials, name: gcp-credentials-user-gcp-sa}
     inputs:
@@ -123,7 +122,7 @@ spec:
           "mode"}, "--bucket", {"inputValue": "bucket"}, "----output-paths", {"outputPath":
           "train"}, {"outputPath": "test"}, {"outputPath": "val"}], "command": ["sh",
           "-ec", "program_path=$(mktemp)\nprintf \"%s\" \"$0\" > \"$program_path\"\npython3
-          -u \"$program_path\" \"$@\"\n", "def run_collect(config,\n                mode,\n                bucket):\n\n    #
+          -u \"$program_path\" \"$@\"\n", "def run_collect(config,\n                mode,\n                bucket):\n    #
           Libraries --------------------------------------------------------------------------------------------------------\n    import
           logging\n    import yaml\n    from collections import namedtuple\n    import
           sys\n    from src.collect import DataCollector\n\n    # Settings ---------------------------------------------------------------------------------------------------------\n    logging.basicConfig(format=''%(asctime)s
@@ -131,8 +130,8 @@ spec:
           %I:%M:%S %p'', level=logging.INFO)\n\n    logging.info(''Initializing pipeline
           configuration...'')\n\n    try:\n        stream = open(config, ''r'')\n        config
           = yaml.load(stream=stream, Loader=yaml.FullLoader)\n        collector =
-          DataCollector(config=config)\n        raw_df = collector.extract()\n        #
-          TODO: Add metadata in the pipeline\n        print(raw_df.head(5))\n        x_train,
+          DataCollector(config=config)\n        raw_df = collector.extract(mode=mode,
+          bucket=bucket)\n        # TODO: Add metadata in the pipeline\n        print(raw_df.head(5))\n        x_train,
           x_test, x_val, y_train, y_test, y_val = collector.transform(raw_df)\n\n        if
           mode == ''cloud'':\n            (train_path_gcs, test_path_gcs, val_path_gcs)
           = collector.load(x_train, x_test, x_val,\n                                                                           y_train,
@@ -152,12 +151,12 @@ spec:
           = [\n    str,\n    str,\n    str,\n\n]\n\nimport os\nfor idx, output_file
           in enumerate(_output_files):\n    try:\n        os.makedirs(os.path.dirname(output_file))\n    except
           OSError:\n        pass\n    with open(output_file, ''w'') as f:\n        f.write(_output_serializers[idx](_outputs[idx]))\n"],
-          "image": "docker.io/in92/data_collect:latest"}}, "inputs": [{"name": "config",
+          "image": "docker.io/in92/data_collect:1.0.1"}}, "inputs": [{"name": "config",
           "type": "String"}, {"name": "mode", "type": "String"}, {"name": "bucket",
-          "type": "String"}], "name": "Collect data", "outputs": [{"name": "train",
+          "type": "String"}], "name": "Collect Data", "outputs": [{"name": "train",
           "type": "GCSPath"}, {"name": "test", "type": "GCSPath"}, {"name": "val",
           "type": "GCSPath"}]}', pipelines.kubeflow.org/component_ref: '{"digest":
-          "dc3bf4eb447156407209361299a5d1f3fad03e300a73518a88e8a58b1ec81e94", "url":
+          "e2a8ee0bd56c06b08044c2138c53d890fe84b6a00f49650b8488d8321758bf83", "url":
           "../deliverables/components/data_collection/component.yaml"}', pipelines.kubeflow.org/arguments.parameters: '{"bucket":
           "{{inputs.parameters.bucket}}", "config": "{{inputs.parameters.config_file}}",
           "mode": "{{inputs.parameters.mode}}"}'}
@@ -335,6 +334,96 @@ spec:
           "{{inputs.parameters.bucket}}", "config": "{{inputs.parameters.config_file}}",
           "mode": "{{inputs.parameters.mode}}", "test_path": "{{inputs.parameters.collect-data-test}}",
           "train_path": "{{inputs.parameters.collect-data-train}}", "val_path": "{{inputs.parameters.collect-data-val}}"}'}
+  - name: validate-data
+    container:
+      args: [--config, '{{inputs.parameters.config_file}}', --mode, '{{inputs.parameters.mode}}',
+        --bucket, '{{inputs.parameters.bucket}}']
+      command:
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp)
+        printf "%s" "$0" > "$program_path"
+        python3 -u "$program_path" "$@"
+      - |
+        def run_validate(config,
+                         mode,
+                         bucket):
+
+            # Libraries --------------------------------------------------------------------------------------------------------
+            import logging
+            import yaml
+            from src.validate import DataValidator
+            from src.helpers import load_data
+            import sys
+
+            # Settings ---------------------------------------------------------------------------------------------------------
+            logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
+                                datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
+
+            try:
+                logging.info('Initializing configuration...')
+                stream = open(config, 'r')
+                config = yaml.load(stream=stream, Loader=yaml.FullLoader)
+                validator = DataValidator(config=config)
+                df = load_data(input_path=config['raw_path'], input_data=config['raw_data'], mode=mode, bucket=bucket)
+                validation_status = validator.validate(df=df)
+                validator.check_validity(validation_status=validation_status)
+            except RuntimeError as error:
+                logging.info(error)
+                sys.exit(1)
+
+        import argparse
+        _parser = argparse.ArgumentParser(prog='Run validate', description='')
+        _parser.add_argument("--config", dest="config", type=str, required=True, default=argparse.SUPPRESS)
+        _parser.add_argument("--mode", dest="mode", type=str, required=True, default=argparse.SUPPRESS)
+        _parser.add_argument("--bucket", dest="bucket", type=str, required=True, default=argparse.SUPPRESS)
+        _parsed_args = vars(_parser.parse_args())
+
+        _outputs = run_validate(**_parsed_args)
+      env:
+      - {name: GOOGLE_APPLICATION_CREDENTIALS, value: /secret/gcp-credentials/user-gcp-sa.json}
+      - {name: CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE, value: /secret/gcp-credentials/user-gcp-sa.json}
+      image: docker.io/in92/data_validate:latest
+      volumeMounts:
+      - {mountPath: /secret/gcp-credentials, name: gcp-credentials-user-gcp-sa}
+    inputs:
+      parameters:
+      - {name: bucket}
+      - {name: config_file}
+      - {name: mode}
+    volumes:
+    - name: gcp-credentials-user-gcp-sa
+      secret: {secretName: user-gcp-sa}
+    metadata:
+      annotations: {pipelines.kubeflow.org/component_spec: '{"implementation": {"container":
+          {"args": ["--config", {"inputValue": "config"}, "--mode", {"inputValue":
+          "mode"}, "--bucket", {"inputValue": "bucket"}], "command": ["sh", "-ec",
+          "program_path=$(mktemp)\nprintf \"%s\" \"$0\" > \"$program_path\"\npython3
+          -u \"$program_path\" \"$@\"\n", "def run_validate(config,\n                 mode,\n                 bucket):\n\n    #
+          Libraries --------------------------------------------------------------------------------------------------------\n    import
+          logging\n    import yaml\n    from src.validate import DataValidator\n    from
+          src.helpers import load_data\n    import sys\n\n    # Settings ---------------------------------------------------------------------------------------------------------\n    logging.basicConfig(format=''%(asctime)s
+          %(levelname)s %(message)s'',\n                        datefmt=''%m/%d/%Y
+          %I:%M:%S %p'', level=logging.INFO)\n\n    try:\n        logging.info(''Initializing
+          configuration...'')\n        stream = open(config, ''r'')\n        config
+          = yaml.load(stream=stream, Loader=yaml.FullLoader)\n        validator =
+          DataValidator(config=config)\n        df = load_data(input_path=config[''raw_path''],
+          input_data=config[''raw_data''], mode=mode, bucket=bucket)\n        validation_status
+          = validator.validate(df=df)\n        validator.check_validity(validation_status=validation_status)\n    except
+          RuntimeError as error:\n        logging.info(error)\n        sys.exit(1)\n\nimport
+          argparse\n_parser = argparse.ArgumentParser(prog=''Run validate'', description='''')\n_parser.add_argument(\"--config\",
+          dest=\"config\", type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--mode\",
+          dest=\"mode\", type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--bucket\",
+          dest=\"bucket\", type=str, required=True, default=argparse.SUPPRESS)\n_parsed_args
+          = vars(_parser.parse_args())\n\n_outputs = run_validate(**_parsed_args)\n"],
+          "image": "docker.io/in92/data_validate:latest"}}, "inputs": [{"name": "config",
+          "type": "String"}, {"name": "mode", "type": "String"}, {"name": "bucket",
+          "type": "String"}], "name": "Validate data"}', pipelines.kubeflow.org/component_ref: '{"digest":
+          "d9e31106811fe7882bbd00699f0344df851932ef506c4c760bb45574e26aa4a6", "url":
+          "../deliverables/components/data_validation/component.yaml"}', pipelines.kubeflow.org/arguments.parameters: '{"bucket":
+          "{{inputs.parameters.bucket}}", "config": "{{inputs.parameters.config_file}}",
+          "mode": "{{inputs.parameters.mode}}"}'}
   - name: women-clothing-reviews-classification-ml-pipeline
     inputs:
       parameters:
@@ -359,6 +448,13 @@ spec:
           - {name: collect-data-test, value: '{{tasks.collect-data.outputs.parameters.collect-data-test}}'}
           - {name: collect-data-train, value: '{{tasks.collect-data.outputs.parameters.collect-data-train}}'}
           - {name: collect-data-val, value: '{{tasks.collect-data.outputs.parameters.collect-data-val}}'}
+          - {name: config_file, value: '{{inputs.parameters.config_file}}'}
+          - {name: mode, value: '{{inputs.parameters.mode}}'}
+      - name: validate-data
+        template: validate-data
+        arguments:
+          parameters:
+          - {name: bucket, value: '{{inputs.parameters.bucket}}'}
           - {name: config_file, value: '{{inputs.parameters.config_file}}'}
           - {name: mode, value: '{{inputs.parameters.mode}}'}
   arguments:

@@ -22,7 +22,7 @@ from .helpers import remove_sw, stemmer
 
 
 # DataPreparer --------------------------------------------------------------------------------------------------------
-class DataPreparer():
+class DataPreparer:
 
     def __init__(self, config):
         self.random_state = config['random_state']

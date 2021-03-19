@@ -23,7 +23,7 @@ from tensorflow.io import gfile
 
 
 # DataCollector --------------------------------------------------------------------------------------------------------
-class DataCollector():
+class DataCollector:
 
     def __init__(self, config):
         self.dataset = config['dataset']
@@ -38,20 +38,23 @@ class DataCollector():
         self.df_names = config['interim_data']
 
 
-    def extract(self):
+    def extract(self, mode, bucket):
         logging.info('Initiating Data Extraction Processing...')
         kaggle.api.authenticate()
         logging.info('Fetching the data...')
         kaggle.api.dataset_download_files(dataset=self.dataset,
                                               path=self.raw_path,
                                               unzip=True)
-        logging.info(f'Loading the data under {self.raw_path}...')
         raw_df = pd.read_csv(os.path.join(self.raw_path, self.raw_data))
+        if mode == 'cloud':
+            out_csv_gcs = f'{bucket}/{self.raw_path}/{self.raw_data}'
+            logging.info(f'Data extracted under {bucket}/{self.raw_path}...')
+            with gfile.GFile(name=out_csv_gcs, mode='w') as file:
+                raw_df.to_csv(file)
         return raw_df
 
     def transform(self, raw_df):
         inter_data = raw_df.copy()
-
         logging.info('Initiating Data Processing...')
         logging.info('Reformat column names...')
         columns_formatted = [col.lower().replace(" ", "_") for col in inter_data.columns]

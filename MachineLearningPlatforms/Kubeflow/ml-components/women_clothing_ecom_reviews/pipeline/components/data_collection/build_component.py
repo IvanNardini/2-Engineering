@@ -9,6 +9,7 @@ import argparse
 REGISTRY = "docker.io/in92"
 COMP_NAME = "component.yaml"
 
+
 def run_build_component(args):
     out_components_dir = args.output_component_dir
     p = Path(out_components_dir)
@@ -17,6 +18,7 @@ def run_build_component(args):
     component = cpt.func_to_container_op(run_collect,
                                          base_image=f'{REGISTRY}/data_collect:1.0.1',
                                          output_component_file=f'{out_components_dir}/{COMP_NAME}')
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run component builder")

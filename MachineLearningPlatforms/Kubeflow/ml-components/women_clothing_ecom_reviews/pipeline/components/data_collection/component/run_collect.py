@@ -8,6 +8,7 @@ import argparse
 from typing import NamedTuple
 
 # Main -----------------------------------------------------------------------------------------------------------------
+#TODO: Search or Ask How GCSPath works
 def run_collect(config: str,
                 mode: str,
                 bucket: str) -> NamedTuple('output_paths',

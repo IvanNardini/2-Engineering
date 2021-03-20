@@ -34,11 +34,13 @@ class DataValidator:
 
     def validate(self, df):
         logging.info('Defining schema...')
-        schema = DataFrameSchema(
-            {k: Column(pdv.Int, checks=[self.check_ge_min, self.check_le_max]) if pd.api.types.is_int64_dtype(np.array(df[k]))
-            else Column(pdv.String, nullable=True)
-            for k in self.columns}
-        )
+        schema_content = {}
+        for col in self.columns:
+            if pd.api.types.is_int64_dtype(np.array(df[col])):
+                schema_content[col] = Column(pdv.Int, checks=[self.check_ge_min, self.check_le_max])
+            else:
+                schema_content[col] = Column(pdv.String, nullable=True)
+        schema = DataFrameSchema(schema_content)
         logging.info('Generating a sample for validation...')
         val_sample = df[self.columns].sample(n=self.sample_size, random_state=self.random_state)
         logging.info('Validating...')

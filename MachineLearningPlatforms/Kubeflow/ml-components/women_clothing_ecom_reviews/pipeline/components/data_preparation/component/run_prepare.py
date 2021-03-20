@@ -9,6 +9,7 @@ from typing import NamedTuple
 from kfp.dsl.types import GCSPath
 
 # Main -----------------------------------------------------------------------------------------------------------------
+#TODO: Search or Ask How GCSPath works. Because I need to install kfp SDK to run this code
 def run_prepare(config: str,
                 mode: str,
                 bucket: str,

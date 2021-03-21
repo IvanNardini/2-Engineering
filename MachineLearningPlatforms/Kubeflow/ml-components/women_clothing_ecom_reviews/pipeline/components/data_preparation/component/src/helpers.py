@@ -13,7 +13,7 @@ from pathlib import Path
 import pandas as pd
 import nltk
 from nltk.corpus import stopwords
-
+nltk.download('punkt')
 nltk.download('stopwords')
 from nltk.stem import PorterStemmer
 
@@ -55,6 +55,6 @@ def save_data(df, path, out_data, mode, bucket):
             os.mkdir(path)
         out_csv = f'{path}/{out_data}'
         logging.info(f'Writing {out_csv} file...')
-        df.to_csv(out_csv)
+        df.to_csv(out_csv, index=False)
         logging.info(f'{out_csv} successfully loaded!')
         return out_csv

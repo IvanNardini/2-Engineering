@@ -7,18 +7,17 @@
 # Libraries ------------------------------------------------------------------------------------------------------------
 
 ## General
-import os
-import yaml
-import sys
 import logging
 
 ## Text data
 import string
 import nltk
-
-nltk.download('punkt')
 from nltk.tokenize import word_tokenize
 from .helpers import remove_sw, stemmer
+
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
 
 
 # DataPreparer --------------------------------------------------------------------------------------------------------

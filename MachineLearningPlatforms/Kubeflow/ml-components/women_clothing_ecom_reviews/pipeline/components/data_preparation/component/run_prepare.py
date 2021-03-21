@@ -36,13 +36,13 @@ def run_prepare(config: str,
 
         if mode == 'cloud':
             output_paths_gcs = []
-            for input_path, filename in zip(input_paths, config['processed_data']):
+            for input_path, out_filename in zip(input_paths, config['processed_data']):
                 data = load_data(input_data=input_path, mode=mode)
                 processed_data = preparer.transform(data=data)
                 # TODO: Add metadata in the pipeline
                 print(processed_data.head(5))
                 out_path_gcs = save_data(df=processed_data, path=config['processed_path'],
-                                         out_data=filename, mode=mode, bucket=bucket)
+                                         out_data=out_filename, mode=mode, bucket=bucket)
                 output_paths_gcs.append(out_path_gcs)
             return tuple(output_paths_gcs)
 

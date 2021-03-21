@@ -1,0 +1,22 @@
+processed_path: 'data/processed'
+processed_data:
+  - 'train_processed.csv'
+  - 'test_processed.csv'
+  - 'val_processed.csv'
+random_state: 8
+lem_variable: 'review_lem'
+target: 'recommended_ind'
+variables_to_drop:
+  - 'review_text'
+  - 'review_lower'
+  - 'review_nopct'
+  - 'review_nodg'
+  - 'review_word_tokens'
+  - 'review_no_sw'
+  - 'review_stem'
+  - 'review_lem'
+featured_path: 'data/featured'
+featured_data:
+  - 'train_featured.csv'
+  - 'test_featured.csv'
+  - 'val_featured.csv'

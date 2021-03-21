@@ -124,11 +124,10 @@ def fit_tf_idf(data):
     return tf_idf_vectorizer
 
 
-def get_abt_df(df, tfidf, features, target, drop_cols):
+def get_abt_df(df, tfidf, features, target):
     df = df.copy()
     tfidf_plain = tfidf.toarray()
     tfidf_df = pd.DataFrame(tfidf_plain, columns=features)
-    df = df.drop(columns=drop_cols)
     abt_df = pd.merge(df, tfidf_df, left_index=True, right_index=True)
     cols = [col for col in abt_df if col != target] + [target]
     abt_df = abt_df[cols]

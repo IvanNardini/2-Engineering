@@ -7,7 +7,9 @@ from component.run_validate import run_validate
 import argparse
 
 REGISTRY = "docker.io/in92"
+IMAGE_NAME = "data_validate:latest"
 COMP_NAME = "component.yaml"
+
 
 def run_build_component(args):
     out_components_dir = args.output_component_dir
@@ -15,7 +17,7 @@ def run_build_component(args):
     if not p.exists():
         os.mkdir(out_components_dir)
     component = cpt.func_to_container_op(run_validate,
-                                         base_image=f'{REGISTRY}/data_validate:latest',
+                                         base_image=f'{REGISTRY}/{IMAGE_NAME}',
                                          output_component_file=f'{out_components_dir}/{COMP_NAME}')
 
 if __name__ == "__main__":

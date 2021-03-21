@@ -43,7 +43,7 @@ def run_generate_features(config: str,
             features = feats_generator.tf_idf_vectorizer.get_feature_names()
             train_tf_idf_matrix = feats_generator.transform(data=train_data)
             train_abt = get_abt_df(df=train_data, tfidf=train_tf_idf_matrix,
-                                   features=features, target=config['target'], drop_cols=config['variables_to_drop'])
+                                   features=features, target=config['target'])
             train_path_gcs = save_data(df=train_abt, path=config['featured_path'],
                                          out_data=config['featured_data'][0], mode=mode, bucket=bucket)
             output_paths_gcs.append(train_path_gcs)
@@ -53,7 +53,7 @@ def run_generate_features(config: str,
                 data = load_data(input_data=input_path, mode=mode)
                 tf_idf_matrix = feats_generator.transform(data=data)
                 abt = get_abt_df(df=data, tfidf=tf_idf_matrix,
-                                   features=features, target=config['target'], drop_cols=config['variables_to_drop'])
+                                   features=features, target=config['target'])
                 out_path_gcs = save_data(df=abt, path=config['featured_path'],
                                            out_data=out_filename, mode=mode, bucket=bucket)
                 output_paths_gcs.append(out_path_gcs)
@@ -68,7 +68,7 @@ def run_generate_features(config: str,
             features = feats_generator.tf_idf_vectorizer.get_feature_names()
             train_tf_idf_matrix = feats_generator.transform(data=train_data)
             train_abt = get_abt_df(df=train_data, tfidf=train_tf_idf_matrix,
-                                   features=features, target=config['target'], drop_cols=config['variables_to_drop'])
+                                   features=features, target=config['target'])
             train_path = save_data(df=train_abt, path=config['featured_path'],
                                        out_data=config['featured_data'][0], mode=mode, bucket=bucket)
             output_paths.append(train_path)
@@ -79,7 +79,7 @@ def run_generate_features(config: str,
                 data = load_data(input_data=data_path, mode=mode)
                 tf_idf_matrix = feats_generator.transform(data=data)
                 abt = get_abt_df(df=data, tfidf=tf_idf_matrix,
-                                 features=features, target=config['target'], drop_cols=config['variables_to_drop'])
+                                 features=features, target=config['target'])
                 out_path = save_data(df=abt, path=config['featured_path'],
                                          out_data=out_filename, mode=mode, bucket=bucket)
                 output_paths.append(out_path)

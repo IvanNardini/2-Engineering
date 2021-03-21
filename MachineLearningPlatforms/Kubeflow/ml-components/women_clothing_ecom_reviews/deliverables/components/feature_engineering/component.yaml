@@ -1,4 +1,4 @@
-name: Run prepare
+name: Run generate features
 inputs:
 - {name: config, type: String}
 - {name: mode, type: String}
@@ -12,7 +12,7 @@ outputs:
 - {name: val, type: GCSPath}
 implementation:
   container:
-    image: docker.io/in92/data_prepare:1.0.0
+    image: docker.io/in92/feature_generator:1.0.1
     command:
     - sh
     - -ec
@@ -21,7 +21,7 @@ implementation:
       printf "%s" "$0" > "$program_path"
       python3 -u "$program_path" "$@"
     - |
-      def run_prepare(config,
+      def run_generate_features(config,
                       mode,
                       bucket,
                       train_path,
@@ -32,41 +32,67 @@ implementation:
           import yaml
           import sys
           import os
-          from src.prepare import DataPreparer
-          from src.helpers import load_data, save_data
+          from src.generate_features import FeaturesGenerator
+          from src.helpers import load_data, get_abt_df, save_data
 
           # Settings ---------------------------------------------------------------------------------------------------------
           logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                               datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
+
           try:
               logging.info('Initializing configuration...')
               stream = open(config, 'r')
               config = yaml.load(stream=stream, Loader=yaml.FullLoader)
-              preparer = DataPreparer(config=config)
-              input_paths = [train_path, test_path, val_path]
+              feats_generator = FeaturesGenerator(config=config)
 
               if mode == 'cloud':
                   output_paths_gcs = []
-                  for input_path, out_filename in zip(input_paths, config['processed_data']):
+
+                  # Train - Inference
+                  train_data = load_data(input_data=train_path, mode=mode)
+                  feats_generator.fit(data=train_data[config['lem_variable']])
+                  features = feats_generator.tf_idf_vectorizer.get_feature_names()
+                  train_tf_idf_matrix = feats_generator.transform(data=train_data)
+                  train_abt = get_abt_df(df=train_data, tfidf=train_tf_idf_matrix,
+                                         features=features, target=config['target'], drop_cols=config['variables_to_drop'])
+                  train_path_gcs = save_data(df=train_abt, path=config['featured_path'],
+                                               out_data=config['featured_data'][0], mode=mode, bucket=bucket)
+                  output_paths_gcs.append(train_path_gcs)
+
+                  # Test, Val - Prediction
+                  for input_path, out_filename in zip([test_path, val_path], config['featured_data']):
                       data = load_data(input_data=input_path, mode=mode)
-                      processed_data = preparer.transform(data=data)
-                      # TODO: Add metadata in the pipeline
-                      print(processed_data.head(5))
-                      out_path_gcs = save_data(df=processed_data, path=config['processed_path'],
-                                               out_data=out_filename, mode=mode, bucket=bucket)
+                      tf_idf_matrix = feats_generator.transform(data=data)
+                      abt = get_abt_df(df=data, tfidf=tf_idf_matrix,
+                                         features=features, target=config['target'], drop_cols=config['variables_to_drop'])
+                      out_path_gcs = save_data(df=abt, path=config['featured_path'],
+                                                 out_data=out_filename, mode=mode, bucket=bucket)
                       output_paths_gcs.append(out_path_gcs)
                   return tuple(output_paths_gcs)
-
               else:
                   output_paths = []
-                  for input_filename, out_filename in zip(config['interim_data'], config['processed_data']):
-                      data_path = os.path.join(config['interim_path'], input_filename)
+
+                  # Train - Inference
+                  train_data_path = os.path.join(config['processed_path'], config['processed_data'][0])
+                  train_data = load_data(input_data=train_data_path, mode=mode)
+                  feats_generator.fit(data=train_data[config['lem_variable']])
+                  features = feats_generator.tf_idf_vectorizer.get_feature_names()
+                  train_tf_idf_matrix = feats_generator.transform(data=train_data)
+                  train_abt = get_abt_df(df=train_data, tfidf=train_tf_idf_matrix,
+                                         features=features, target=config['target'], drop_cols=config['variables_to_drop'])
+                  train_path = save_data(df=train_abt, path=config['featured_path'],
+                                             out_data=config['featured_data'][0], mode=mode, bucket=bucket)
+                  output_paths.append(train_path)
+
+                  # Test, Val - Prediction
+                  for input_filename, out_filename in zip(config['processed_data'][1:], config['featured_data']):
+                      data_path = os.path.join(config['processed_path'], input_filename)
                       data = load_data(input_data=data_path, mode=mode)
-                      processed_data = preparer.transform(data=data)
-                      # TODO: Add metadata in the pipeline
-                      print(processed_data.head(5))
-                      out_path = save_data(df=processed_data, path=config['processed_path'],
-                                           out_data=out_filename, mode=mode, bucket=bucket)
+                      tf_idf_matrix = feats_generator.transform(data=data)
+                      abt = get_abt_df(df=data, tfidf=tf_idf_matrix,
+                                       features=features, target=config['target'], drop_cols=config['variables_to_drop'])
+                      out_path = save_data(df=abt, path=config['featured_path'],
+                                               out_data=out_filename, mode=mode, bucket=bucket)
                       output_paths.append(out_path)
                   return tuple(output_paths)
 
@@ -75,7 +101,7 @@ implementation:
               sys.exit(1)
 
       import argparse
-      _parser = argparse.ArgumentParser(prog='Run prepare', description='')
+      _parser = argparse.ArgumentParser(prog='Run generate features', description='')
       _parser.add_argument("--config", dest="config", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--mode", dest="mode", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--bucket", dest="bucket", type=str, required=True, default=argparse.SUPPRESS)
@@ -86,7 +112,7 @@ implementation:
       _parsed_args = vars(_parser.parse_args())
       _output_files = _parsed_args.pop("_output_paths", [])
 
-      _outputs = run_prepare(**_parsed_args)
+      _outputs = run_generate_features(**_parsed_args)
 
       _output_serializers = [
           str,

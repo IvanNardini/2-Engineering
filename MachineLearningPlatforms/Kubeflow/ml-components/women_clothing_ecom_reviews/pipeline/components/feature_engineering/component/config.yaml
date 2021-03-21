@@ -4,7 +4,7 @@ processed_data:
   - 'test_processed.csv'
   - 'val_processed.csv'
 random_state: 8
-lem_variable: 'review_lem'
+lem_variable: 'review_text_processed'
 target: 'recommended_ind'
 variables_to_drop:
   - 'review_text'

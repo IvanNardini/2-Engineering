@@ -17,12 +17,14 @@ import argparse
 DATA_COLLECT = '../deliverables/components/data_collection/component.yaml'
 DATA_PREPARE = '../deliverables/components/data_preparation/component.yaml'
 DATA_VALIDATE = '../deliverables/components/data_validation/component.yaml'
+FEATURE_ENGINE = '../deliverables/components/feature_engineering/component.yaml'
 REGISTRY = "docker.io/in92"
 
 # Components -----------------------------------------------------------------------------------------------------------
 data_collection_component = cmpt.load_component_from_file(filename=DATA_COLLECT)
 data_preparation_component = cmpt.load_component_from_file(filename=DATA_PREPARE)
 data_validation_component = cmpt.load_component_from_file(filename=DATA_VALIDATE)
+feature_engine_component = cmpt.load_component_from_file(filename=FEATURE_ENGINE)
 
 
 # run_build_pipeline ---------------------------------------------------------------------------------------------------
@@ -51,6 +53,15 @@ def run_build_pipeline(args):
                                                 test_path=step_1.outputs['test'],
                                                 val_path=step_1.outputs['val']).apply(use_gcp_secret('user-gcp-sa'))
             step_3.after(step_1)
+            
+            step_4 = feature_engine_component(config=config_file,
+                                              mode=mode,
+                                              bucket=bucket,
+                                              train_path=step_3.outputs['train'],
+                                              test_path=step_3.outputs['test'],
+                                              val_path=step_3.outputs['val']).apply(use_gcp_secret('user-gcp-sa'))
+            step_4.after(step_3)
+            
 
     pipeline_compiler = cmp.Compiler()
     pipeline_compiler.compile(pipeline_func=build_pipeline,

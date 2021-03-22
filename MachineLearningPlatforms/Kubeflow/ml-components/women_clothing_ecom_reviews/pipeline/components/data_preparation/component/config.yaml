@@ -1,8 +1,8 @@
 interim_path: 'data/interim'
 interim_data:
-  - 'train.csv'
-  - 'test.csv'
-  - 'val.csv'
+  - 'train_interim.csv'
+  - 'test_interim.csv'
+  - 'val_interim.csv'
 random_state: 8
 lang: 'english'
 text: 'review_text'

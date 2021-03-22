@@ -10,4 +10,6 @@ MachineLearningPlatforms/Kubeflow/base/pipelines/hellokubeflow.egg-info
 MachineLearningPlatforms/Kubeflow/base/__init__.py
 MachineLearningPlatforms/Kubeflow/base/tests
 MachineLearningPlatforms/Kubeflow/base/.pytest_cache
+
+MachineLearningPlatforms/Kubeflow/ml-components/women_clothing_ecom_reviews/data
 MachineLearningPlatforms/Kubeflow/ml-components/women_clothing_ecom_reviews/pipeline/components/data_collection/kaggle.json

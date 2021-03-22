@@ -10,6 +10,6 @@ test_size: 0.2
 val_size: 0.25
 interim_path: 'data/interim'
 interim_data:
-  - 'train.csv'
-  - 'test.csv'
-  - 'val.csv'
+  - 'train_interim.csv'
+  - 'test_interim.csv'
+  - 'val_interim.csv'

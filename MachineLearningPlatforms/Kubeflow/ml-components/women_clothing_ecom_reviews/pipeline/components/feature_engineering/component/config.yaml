@@ -17,6 +17,6 @@ variables_to_drop:
   - 'review_lem'
 featured_path: 'data/featured'
 featured_data:
-  - 'train_featured.csv'
-  - 'test_featured.csv'
-  - 'val_featured.csv'
+  - 'train_abt.csv'
+  - 'test_abt.csv'
+  - 'val_abt.csv'

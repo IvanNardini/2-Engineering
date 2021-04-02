@@ -23,19 +23,19 @@ class FeaturesGenerator:
         self.tf_idf_vectorizer = None
         self.min_max_scaler = None
 
-    def fit(self, data, est_param):
+    def fit(self, x, est_param, params=None):
         if est_param == 'tf_idf':
-            tf_idf_vectorizer = fit_tf_idf(data, self.text_variables[1])
+            tf_idf_vectorizer = fit_tf_idf(x, self.text_variables[1], params=params)
             self.tf_idf_vectorizer = tf_idf_vectorizer
         elif est_param == 'min_max_scale':
-            min_max_scaler = fit_min_max_scaler(data)
+            min_max_scaler = fit_min_max_scaler(x, params=params)
             self.min_max_scaler = min_max_scaler
 
-    def transform(self, data, est_param):
+    def transform(self, x, est_param):
         try:
             if est_param == 'tf_idf':
                 logging.info('Processing text features...')
-                df_text_feats = get_text_features(data, self.text_variables[0])
+                df_text_feats = get_text_features(x, self.text_variables[0])
                 logging.info('Processing nlp features...')
                 df_nlp_feats = get_nlp_features(df_text_feats, self.text_variables[0])
                 logging.info('Processing tf-idf matrix...')
@@ -46,8 +46,8 @@ class FeaturesGenerator:
 
             elif est_param == 'min_max_scale':
                 logging.info('Scaling data...')
-                scaled_matrix = self.min_max_scaler.transform(data)
-                scaled_df = get_scaled_df(scaled_matrix, data)
+                scaled_matrix = self.min_max_scaler.transform(x)
+                scaled_df = get_scaled_df(scaled_matrix, x)
                 return scaled_df
 
         except RuntimeError as error:

@@ -112,10 +112,13 @@ def get_nlp_features(df, text_var):
     return df_copy
 
 
-def fit_tf_idf(data, text_var):
+def fit_tf_idf(data, text_var, params=None):
     logging.info('Train TfidfTransformer...')
     try:
-        tf_idf_vectorizer = TfidfVectorizer()
+        if params:
+            tf_idf_vectorizer = TfidfVectorizer(**params)
+        else:
+            tf_idf_vectorizer = TfidfVectorizer()
         tf_idf_vectorizer = tf_idf_vectorizer.fit(data[text_var])
     except RuntimeError as error:
         logging.error(error)
@@ -125,10 +128,13 @@ def fit_tf_idf(data, text_var):
     return tf_idf_vectorizer
 
 
-def fit_min_max_scaler(data):
+def fit_min_max_scaler(data, params=None):
     logging.info('Train MinMaxScaler...')
     try:
-        scaler = MinMaxScaler()
+        if params:
+            scaler = MinMaxScaler(**params)
+        else:
+            scaler = MinMaxScaler()
         scaler = scaler.fit(data)
     except RuntimeError as error:
         logging.error(error)
